@@ -270,24 +270,33 @@ Approximately -0.0629611. Compared to the dino dataset (-0.0645), the value is v
 
 **Filter, plot, and calculate correlation:**
 ```{r circle-data, eval = FALSE}
-# Your code here
+circle_data <- datasaurus_dozen %>%
+  filter(dataset == "circle")
 ```
 
 ```{r circle-plot, fig.fullwidth=TRUE, eval = FALSE}
-# Your code here
+ggplot(data = circle_data, mapping = aes(x = x, y = y)) +
+  geom_point()
 ```
 
 ```{r circle-correlation, eval = FALSE}
-# Your code here
+circle_data %>%
+  summarize(r = cor(x, y))
 ```
 
 **Write your answers:**
 
 - The correlation coefficient for the circle dataset is: 
 
+-0.06834336	
+
 - Compared to the dino dataset, the circle dataset's correlation is:
 
+The correlation coefficient for the circle dataset (-0.0683) is very similar to the dino dataset (-0.0645). Although it is slightly more negative, both values are close to zero.
+
 - What do you notice about the correlation coefficients for dino, star, and circle?
+
+The correlation coefficients for the dino, star, and circle datasets are all very similar and close to zero, despite the datasets having very different visual patterns. This shows that correlation by themselves doesn't necessarily fully capture things about the structure or shape of the data. It also shows why visualization is essential in data analysis
 
 🧶 ✅ ⬆️ *You should pause again, commit changes with the commit message "Added answer for Ex 4", and push. Make sure to commit and push all changed files so that your Git pane is cleared up afterwards.*
 
