@@ -1,20 +1,20 @@
 ---
 title: "Lab 02 - Global plastic waste"
-author: "[Your Name]"
+author: "Kaden Zhu"
 output: 
+  tufte::tufte_html:
+    css: ../lab.css
+    tufte_variant: "envisioned"
+    highlight: pygments
   tufte::tufte_handout:
     latex_engine: xelatex
     highlight: pygments
     keep_tex: true
     citation_package: natbib
-  tufte::tufte_html:
-    css: ../lab.css
-    tufte_variant: "envisioned"
-    highlight: pygments
 link-citations: true
 ---
 ```{r include = FALSE}
-knitr::opts_chunk$set(eval = FALSE)
+knitr::opts_chunk$set(eval=TRUE)
 ```
 
 ## Introduction
@@ -95,14 +95,15 @@ Before diving into the exercises, let's make sure you're familiar with the RStud
 
 **Question 1:** Without looking, can you name the four panes in RStudio and briefly describe their purpose?
 
-**Your answer:**
+**Your answer:** 
 
+There is the Source Pane where you can edit the source document such as R Markdown files or any scripts you can also knit this and view it in pdf or html. Then there is the console and terminal pane where you can load packages or enter other commands and see the output in the console/terminal. There is also thehome pane with your packages, help which includes R resources manuals docs for Rstudio and more reference material, you also have viewer which you can attach a file to read, and plots that you have which you can display. Lastly you have the environment and history pane, we use this mostly for viewing the data we've loaded, our history, and manage github versioning with viewing the diff commiting and pushing. 
 
 **Question 2:** Verify that the dataset has loaded into the Environment pane. How many observations are in the dataset?
 
 **Hint:** Look in the Environment pane, or run `nrow(plastic_waste)` in the Console, or click on the dataset name to view it.
 
-**Your answer:** The dataset has _____ observations.
+**Your answer:** The dataset has 240 observations.
 
 **Question 3:** Have a quick look at the data using `View(plastic_waste)` in the Console. You'll notice that some cells contain `NA`. What does `NA` mean in R?
 
@@ -110,7 +111,7 @@ Before diving into the exercises, let's make sure you're familiar with the RStud
 
 **Your answer:**
 
-
+In R, NA stands for “Not Available” and represents a missing value in the data. It is a special indicator used when a value is unknown, undefined, or not recorded. If you perform any numerical computations involving NA, the result will typically also be NA unless you explicitly handle missing values. R includes different typed versions of NA, such as NA_integer_, NA_real_, NA_complex_, and NA_character_, which correspond to different data types. The function anyNA() can be used to check for missing values in objects like atomic vectors, lists, pairlists, and even NULL.
 
 **✓ Checkpoint:** Make sure the data loaded correctly and you can see it in your Environment pane before continuing.
 
@@ -143,12 +144,12 @@ Did you expect this result? Trinidad and Tobago has unusually high plastic waste
 Plot, using histograms, the distribution of plastic waste per capita faceted by continent. What can you say about how the continents compare to each other in terms of their plastic waste per capita?
 
 **Reminder:** Faceting creates separate plots for each group. Use `facet_wrap(~variable)` to facet by a categorical variable.
-```{r plastic-waste-continent, eval=FALSE}
-# Remember to change eval=FALSE to eval=TRUE after filling in the blanks!
+```{r plastic-waste-continent, eval=TRUE}
+# Remember to change eval=TRUE to eval=TRUE after filling in the blanks!
 ggplot(data = plastic_waste, 
-       aes(x = ___)) +
-  geom_histogram(binwidth = ___) +
-  facet_wrap(~___)
+       aes(x = plastic_waste_per_cap)) +
+  geom_histogram(binwidth = 0.2) +
+  facet_wrap(~continent)
 ```
 
 **Interpretation:** Compare the continents in terms of their plastic waste per capita. Consider:
@@ -159,6 +160,11 @@ ggplot(data = plastic_waste,
 
 **Your answer:**
 
+The continent that has the highest typical plastic waste per cap is North America, yes asia and europe have similar bars on the lower end of plastic waste per capita, but you see clearly NA extends to the right most out of all the other countries above 3.5
+
+Africa has lowest typical plastic waste per capita, although South americas bars are shorter they are more to the right and have more spread, Africa's highest and most typical is at the left most plastic waste per cap.
+
+North America also shows the most variation. Most of its countries fall between 0 and 0.7, but there are a few much higher values above 3, creating a wide spread in the distribution.
 
 ---
 
@@ -205,17 +211,17 @@ This still doesn't look great...
 Recreate the density plots above using a different (lower) alpha level that works better for displaying the density curves for all continents.
 
 **Try alpha values like 0.3, 0.4, or 0.5 to see which works best.**
-```{r plastic-waste-density-alpha, eval=FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
+```{r plastic-waste-density-alpha, eval=TRUE}
+# Remember to change eval=TRUE to eval=TRUE!
 ggplot(data = plastic_waste, 
        mapping = aes(x = plastic_waste_per_cap, 
                      color = continent, 
                      fill = continent)) +
-  geom_density(alpha = ___)
+  geom_density(alpha = 0.25)
 ```
 
 **Which alpha level did you choose and why?**
-
+I chose 0.25 because you can see the overlapping lines that were covered behind south america clearer but you can also distinguish them apart because the alpha isn't too bare that everything will be so light and indistinguishable. 
 
 ---
 
@@ -226,6 +232,8 @@ Describe why we defined the `color` and `fill` of the curves by mapping aestheti
 **Hint:** Think about what varies by data vs. what is constant across all data points.
 
 **Your answer:**
+We mapped color and fill inside aes() because they vary based on a data variable, such as continent. This allows each group in the data to have a different color and fill automatically.
+Alpha was defined outside of aes() because it is not meant to vary by data. It is a constant setting that applies equally to all curves in the plot. If we placed alpha inside aes(), it would try to map transparency to a variable, which is not what we want.
 
 
 🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercises 1-3", and push your changes.**
@@ -249,21 +257,20 @@ ggplot(data = plastic_waste,
 Convert your side-by-side box plots from the previous task to [violin plots](http://ggplot2.tidyverse.org/reference/geom_violin.html). What do the violin plots reveal that box plots do not? What features are apparent in the box plots but not in the violin plots?
 
 **Hint:** Simply replace `geom_boxplot()` with `geom_violin()`.
-```{r plastic-waste-violin, eval=FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
+```{r plastic-waste-violin, eval=TRUE}
+# Remember to change eval=TRUE to eval=TRUE!
 ggplot(data = plastic_waste, 
        mapping = aes(x = continent, 
                      y = plastic_waste_per_cap)) +
-  geom___()
+  geom_violin()
 ```
 
 **What do violin plots reveal that box plots do not?**
-
-
+Violin plots reveal the full distribution and density of the data and visualizes it with its wideness. Box plots show the median, interquartile range, and potential outliers, they do not show how the data are distributed within that range. A violin plot allows us to see where values are more concentrated by showing the density at different levels. This helps us understand how many countries cluster around certain plastic waste per capita values, rather than only seeing summary statistics.
 
 **What features are apparent in box plots but not in violin plots?**
 
-
+Box plots clearly show the median as a line inside the box, the interquartile range, and outliers. In a standard violin plot, the exact median and quartiles are not specifically marked unless they are added separately.Violin plots show density, they don't make summary statistics right in the visualization like the median as and not immediately clear as box plots do.
 ---
 
 ## Scatterplots
@@ -275,17 +282,17 @@ Now let's explore relationships between variables using scatterplots.
 Visualize the relationship between plastic waste per capita and mismanaged plastic waste per capita using a scatterplot. Describe the relationship.
 
 **Reminder:** Use `geom_point()` to create scatterplots.
-```{r plastic-waste-mismanaged, eval=FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
-ggplot(data = ___, 
-       mapping = aes(x = ___, 
-                     y = ___)) +
-  geom___()
+```{r plastic-waste-mismanaged, eval=TRUE}
+# Remember to change eval=TRUE to eval=TRUE!
+ggplot(data = plastic_waste, 
+       mapping = aes(x = plastic_waste_per_cap, 
+                     y = mismanaged_plastic_waste_per_cap)) +
+  geom_point()
 ```
 
 **Describe the relationship between plastic waste per capita and mismanaged plastic waste per capita:**
 
-
+There is a postitive relationship between plastic waste per capita and mismanaged plastic waste per capita most countries cluster in the lower end of plastic waste per capita meaning they have both low plastic waste per capita and low mismanaged waste. There's a few higher values where countries with greater plastic consumption also show higher levels of mismanaged waste.
 ---
 
 ## Exercise 6
@@ -293,17 +300,17 @@ ggplot(data = ___,
 Color the points in the scatterplot by continent. Does there seem to be any clear distinctions between continents with respect to how plastic waste per capita and mismanaged plastic waste per capita are associated?
 
 **Hint:** Add `color = continent` to your `aes()` mapping.
-```{r plastic-waste-mismanaged-continent, eval=FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
+```{r plastic-waste-mismanaged-continent, eval=TRUE}
+# Remember to change eval=TRUE to eval=TRUE!
 ggplot(data = plastic_waste, 
        mapping = aes(x = plastic_waste_per_cap, 
                      y = mismanaged_plastic_waste_per_cap,
-                     color = ___)) +
+                     color = continent)) +
   geom_point()
 ```
 
 **Are there clear distinctions between continents?**
-
+Most countries overlap heavily on the lower range of plastic waste per cap and they all cluster near the low values america stand out just slightly because it has an extremem outlier but China seems to have higher mismanaged plastic waste per capita compared to the others and the highest point on the lower end. and Europe has a little but lower mismanaged plastic waste per cap. 
 
 
 🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercises 4-6", and push your changes.**
@@ -315,26 +322,26 @@ ggplot(data = plastic_waste,
 Visualize the relationship between plastic waste per capita and total population as well as plastic waste per capita and coastal population. You will need to make two separate plots. Do either of these pairs of variables appear to be more strongly linearly associated?
 
 **Plot 1: Plastic waste per capita vs. total population**
-```{r plastic-waste-population, eval=FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
-ggplot(data = ___, 
-       mapping = aes(x = ___, 
-                     y = ___)) +
+```{r plastic-waste-population, eval=TRUE}
+# Remember to change eval=TRUE to eval=TRUE!
+ggplot(data = plastic_waste, 
+       mapping = aes(x = plastic_waste_per_cap, 
+                     y = total_pop)) +
   geom_point()
 ```
 
 **Plot 2: Plastic waste per capita vs. coastal population**
-```{r plastic-waste-coastal, eval=FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
-ggplot(data = ___, 
-       mapping = aes(x = ___, 
-                     y = ___)) +
+```{r plastic-waste-coastal, eval=TRUE}
+# Remember to change eval=TRUE to eval=TRUE!
+ggplot(data = plastic_waste, 
+       mapping = aes(x = plastic_waste_per_cap, 
+                     y = coastal_pop)) +
   geom_point()
 ```
 
 **Which pair of variables appears to be more strongly linearly associated?**
 
-
+Between the two pairs, plastic waste per capita and coastal population appear slightly more linearly associated than plastic waste per capita and total population neither has a very strong positive or negative relationship they both show heavy clustering at low values
 
 🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercise 7", and push your changes.**
 
@@ -371,24 +378,26 @@ plastic_waste %>%
 6. Add appropriate labels
 
 **Build it step by step:**
-```{r recreate-plot, eval=FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
+```{r recreate-plot, eval=TRUE}
+# Remember to change eval=TRUE to eval=TRUE!
 plastic_waste %>% 
-  mutate(coastal_pop_prop = ___ / ___) %>%
-  filter(___ < ___) %>%
-  ggplot(aes(x = ___, y = ___, color = ___)) + 
+  mutate(coastal_pop_prop = coastal_pop / total_pop) %>%
+  filter(plastic_waste_per_cap < 3) %>%
+  ggplot(aes(x = coastal_pop_prop, y = plastic_waste_per_cap, color = continent)) + 
     geom_point() +
     geom_smooth(color = "black") +
     scale_color_viridis_d() +
-    labs(x = "___", 
-         y = "___", 
-         color = "___",
-         title = "___",
-         subtitle = "___") +
+    labs(x = "Coastal population proportion coastal/total pop", 
+         y = "Plastic Waste Per Cap", 
+         color = "Continent",
+         title = "Plastic Waste vs Coastal population proportion",
+         subtitle = "by Continent") +
     theme_minimal()
 ```
 
 **Interpretation:** What does this plot reveal about the relationship between coastal population proportion and plastic waste per capita? Does the relationship differ across continents?
+
+theres a slight positive relationship between coastal population proportion and plastic waste per capita, as the proportion of people living near coastal areas increases the plastic waste per capita tends to increase, the trend line looks like a smooth increase so the higher the costal pop out of total pop the higher plastic waste per cap
 
 
 🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercise 8", and push your changes.**
@@ -399,7 +408,7 @@ plastic_waste %>%
 
 **Visualization errors:**
 
-- **Plot not showing** → Make sure you changed `eval=FALSE` to `eval=TRUE` in the chunk options
+- **Plot not showing** → Make sure you changed `eval=TRUE` to `eval=TRUE` in the chunk options
 - **Error: "object not found"** → Check spelling of variable names (case-sensitive!)
 - **Error: "could not find function 'geom_violin'"** → Make sure tidyverse is loaded
 - **Weird looking plots** → Try different alpha values, binwidths, or figure sizes
