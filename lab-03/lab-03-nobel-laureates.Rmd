@@ -1,16 +1,16 @@
 ---
 title: "Lab 03 - Nobel laureates"
-author: "[Your Name]"
+author: "Kaden Zhu"
 output: 
-  tufte::tufte_html:
-    css: ../lab.css
-    tufte_variant: "envisioned"
-    highlight: pygments
   tufte::tufte_handout:
     latex_engine: xelatex
     highlight: pygments
     keep_tex: true
     citation_package: natbib
+  tufte::tufte_html:
+    css: ../lab.css
+    tufte_variant: "envisioned"
+    highlight: pygments
 link-citations: true
 ---
 
@@ -163,21 +163,22 @@ Before diving into the exercises, let's get familiar with the data.
 
 **Question 1:** How many observations and how many variables are in the dataset? Use inline code in your answer.
 
+
 **Hint:** Use   backtick r nrow(nobel) backtick  for rows and  backtick r ncol(nobel) backtick for columns in your narrative text.
 
-**Your answer:** 
+**Your answer:** there are `r nrow(nobel)` observations and `r ncol(nobel)` variables in the dataset.
 
 **Question 2:** Run `View(nobel)` in your Console. What does each row represent?
 
-**Your answer:**
 
+**Your answer:** Each row represents one Nobel Prize laureate, so the granularity of the dataset is one Nobel Prize winner.
 
 
 **Question 3:** Look at the data. What categories of Nobel prizes are included in this dataset?
 
 **Hint:** Run `count(nobel, category)` in your Console.
 
-**Your answer:**
+**Your answer:** Chemistry, Economics, Literature, Medicine, Peace, and Physics
 
 ___________________________________________________________________________
 
@@ -195,7 +196,7 @@ How many observations and how many variables are in the dataset? Use inline code
 
 **Write your answer using inline code:**
 
-The nobel dataset has _____ observations and _____ variables. Each row represents _____.
+The nobel dataset has `r nrow(nobel)` observations and `r ncol(nobel)` variables. Each row represents 1 Nobel Prize laureate.
 
 ---
 
@@ -210,19 +211,19 @@ Create a new data frame called `nobel_living` that filters for:
 -   laureates who are still alive (their `died_date` is `NA`)
 
 **Fill in the blanks below:**
-```{r create-nobel-living, eval=FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
-nobel_living %
+```{r create-nobel-living, eval=TRUE}
+# Remember to change eval=TRUE to eval=TRUE!
+nobel_living <- nobel %>%
   filter(
-    !is.na(___),
-    ___ != "org",
-    is.na(___)
+    !is.na(country),
+    gender != "org",
+    is.na(died_date)
   )
 ```
 
 **Verify your filtering:** Confirm that once you have filtered for these characteristics you are left with a data frame with 228 observations. Use inline code to check: ` nrow(nobel_living) `
 
-**Your verification:** After filtering, nobel_living has ____ observations.
+**Your verification:** After filtering, nobel_living has `r nrow(nobel_living)` observations.
 
 🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercises 1-2", and push your changes.**
 
@@ -238,8 +239,8 @@ First, we'll create a new variable to identify whether the laureate was in the U
 The `if_else()` function tests a condition. If TRUE, it returns the first value ("USA"); if FALSE, it returns the second value ("Other").
 ```
 
-```{r create-country-us, eval = FALSE}
-nobel_living %>%
+```{r create-country-us, eval = TRUE}
+nobel_living <- nobel_living %>%
   mutate(
     country_us = if_else(country == "USA", "USA", "Other")
   )
@@ -252,7 +253,7 @@ nobel_living %>%
 
 Next, we will limit our analysis to only the following categories: Physics, Medicine, Chemistry, and Economics.
 
-```{r create-science-data, eval = FALSE}
+```{r create-science-data, eval = TRUE}
 nobel_living_science  <- nobel_living %>%
   filter(category %in% c("Physics", "Medicine", "Chemistry", "Economics"))
 ```
@@ -272,12 +273,14 @@ Create a faceted bar plot visualizing the relationship between the category of p
 -   Flip the coordinates so the bars are horizontal, not vertical
 
 **Build your visualization:**
-```{r nobel-bar-plot, eval=FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
-ggplot(data = nobel_living_science, aes(x = ___)) +
+```{r nobel-bar-plot, eval=TRUE}
+# Remember to change eval=TRUE to eval=TRUE!
+ggplot(data = nobel_living_science, aes(x = country_us, fill = country_us)) +
   geom_bar() +
   coord_flip() +
-  facet_wrap(~___)
+  facet_wrap(~ category) +
+  labs(x = NULL, y = "Count", fill = "Country") +
+  theme(legend.position = "bottom")
 ```
 
 **Hints:**
@@ -289,6 +292,7 @@ ggplot(data = nobel_living_science, aes(x = ___)) +
 **Interpretation:** Does the Buzzfeed headline ("Most living Nobel laureates were based in the US when they won their prizes") appear to be supported by the data? Consider all four scientific categories.
 
 **Your answer:**
+Yes the visualization does support Buzzfeed's headline because across all categories Most of the living nobel laureates were US based when they won their prizes. 
 
 
 
@@ -306,24 +310,24 @@ Create a new variable called `born_country_us` that has the value `"USA"` if the
 ```{marginfigure}
 **Hint:** This is very similar to how we created `country_us` earlier. You can adapt that code!
 ```
-```{r create-born-country, eval=FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
-nobel_living_science %
+```{r create-born-country, eval=TRUE}
+# Remember to change eval=TRUE to eval=TRUE!
+nobel_living_science <- nobel_living %>%
   mutate(
-    born_country_us = if_else(___ == "___", "USA", "Other")
+    born_country_us = if_else(born_country == "USA", "USA", "Other")
   )
 ```
 
 **Now count how many laureates were born in the US:**
-```{r count-born-us, eval=FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
+```{r count-born-us, eval=TRUE}
+# Remember to change eval=TRUE to eval=TRUE!
 nobel_living_science %>%
-  count(___)
+  count(born_country_us)
 ```
 
-**How many laureates were born in the US?** _____
+**How many laureates were born in the US?** 105
 
-**How many were born in other countries?** _____
+**How many were born in other countries?** 123
 
 ---
 
@@ -338,13 +342,22 @@ Add a second variable to your visualization from Exercise 3 based on whether the
 -   Each bar should have segments for whether the laureate was born in the US or not
 
 **Build your stacked bar chart:**
-```{r nobel-stacked-bar, eval=FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
+```{r nobel-stacked-bar, eval=TRUE}
+# Remember to change eval=TRUE to eval=TRUE!
 ggplot(data = nobel_living_science, 
-       aes(x = country_us, fill = ___)) +
+       aes(x = country_us, fill = born_country_us)) +
   geom_bar() +
   coord_flip() +
-  facet_wrap(~___)
+  facet_wrap(~ category)+
+  labs(
+    title = "Living Nobel laureates in scientific categories",
+    subtitle = "Bars show whether laureates were based in the USA when they won, and stacked by whether or not were born in the USA",
+    x = "Based in USA when prize was awarded",
+    y = "Number of laureates",
+    fill = "Born in"
+  ) +
+  scale_fill_manual(values = c("USA" = "steelblue", "Other" = "gray70")) +
+  theme_minimal()
 ```
 
 **Hints:**
@@ -355,8 +368,7 @@ ggplot(data = nobel_living_science,
 **Interpretation:** Based on your visualization, do the data appear to support Buzzfeed's claim that many US-based laureates were born in other countries?
 
 **Your answer:**
-
-
+Yes, a large amount of US-based laureates where born abroad and in several categories that group makes up a large share of the US-based winners. There are substantially more laureates who were born outside the US but based in the US than laureates who were born in the US but based outside the US.
 
 🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercises 4-5", and push your changes.**
 
@@ -372,24 +384,24 @@ Note that your results won't exactly match the Buzzfeed article. The data has be
 In a single pipeline, filter for laureates who won their prize in the US, but were born outside of the US, and then create a frequency table (with the `count()` function) for their birth country (`born_country`) and arrange the resulting data frame in descending order of number of observations for each country. Which country is the most common?
 
 **Build your pipeline:**
-```{r immigrant-nobelists, eval=FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
+```{r immigrant-nobelists, eval=TRUE}
+# Remember to change eval=TRUE to eval=TRUE!
 nobel_living_science %>%
   filter(
-    ___ == "USA",
-    ___ == "Other"
+    country_us == "USA",
+    born_country_us == "Other"
   ) %>%
-  count(___) %>%
-  arrange(desc(___))
+  count(born_country) %>%
+  arrange(desc(n))
 ```
 
 **Which country (outside the US) has produced the most Nobel laureates who won while based in the US?**
 
-
+Germany with 7 laureates
 
 **How many laureates from this country won while based in the US?**
 
-
+7
 
 🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercise 6", and push your changes.**
 
@@ -413,7 +425,7 @@ nobel_living_science %>%
 
 **General issues:**
 
-- **Code chunk not running** → Make sure you changed `eval=FALSE` to `eval=TRUE`
+- **Code chunk not running** → Make sure you changed `eval=TRUE` to `eval=TRUE`
 - **Inline code not working** → Use backticks with r 
 - **Changes not on GitHub** → Remember to commit AND push
 
