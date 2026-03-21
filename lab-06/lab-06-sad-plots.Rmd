@@ -1,16 +1,16 @@
 ---
 title: "Lab 06 - Take a sad plot and make it better"
-author: "Your Name"
+author: "Kaden Zhu"
 output: 
-  tufte::tufte_html:
-    css: ../lab.css
-    tufte_variant: "envisioned"
-    highlight: pygments
   tufte::tufte_handout:
     latex_engine: xelatex
     highlight: pygments
     keep_tex: true
     citation_package: natbib
+  tufte::tufte_html:
+    css: ../lab.css
+    tufte_variant: "envisioned"
+    highlight: pygments
 link-citations: true
 ---
 ```{r setup, include=FALSE}
@@ -109,7 +109,7 @@ knitr::include_graphics("img/staff-employment.png")
 
 Let's start by loading the data used to create this plot.
 ```{r load-data-staff, message = FALSE}
-staff <- read_csv("data/instructional-staff.csv")
+staff <- instructors
 ```
 
 Each row in this dataset represents a faculty type, and the columns are the years for which we have data. The values are percentage of hires of that type of faculty for each year.
@@ -125,9 +125,9 @@ But before we do so, a thought exercise: *How many rows will the long-format dat
 
 **Think about it:** The data will have a row for each combination of year and faculty type. If there are 5 faculty types and 11 years of data, how many rows will we have?
 
-**Your answer:** The long-format data will have _____ rows.
+**Your answer:** The long-format data will have 55 rows.
 
-**Calculation:** _____ faculty types × _____ years = _____ rows
+**Calculation:** 5 faculty types × 11 years = 55 rows
 
 ---
 
@@ -153,13 +153,13 @@ pivot_longer(data, cols, names_to = "name", values_to = "value")
 - The fourth argument, `values_to`, is the name of the new column that will contain the values
 
 Here's how we use it for our data:
-```{r pivot-staff}
+```{r pivot-staff, eval = TRUE}
 staff_long <- staff %>%
   pivot_longer(
-    cols = -faculty_type,              # All columns except faculty_type
-    names_to = "year"                   # Column names become "year"
-  ) %>%
-  mutate(year = as.numeric(year))      # Convert year to numeric
+    cols = -year,
+    names_to = "faculty_type",
+    values_to = "value"
+  )
 ```
 
 **What this code does:**
@@ -172,7 +172,7 @@ staff_long <- staff %>%
 - Saves the result as `staff_long`
 
 Let's take a look at what the new longer data frame looks like.
-```{r view-staff-long}
+```{r view-staff-long, eval = FALSE}
 staff_long
 ```
 
@@ -216,7 +216,7 @@ staff_long %>%
 Include the line plot you made above in your report and make sure the figure width is large enough to make it legible. Also add a title, improve the axis labels, and fix the legend label.
 
 **Add these improvements to your plot:**
-```{r improved-staff-plot, fig.width = 10, fig.fullwidth = TRUE, eval = FALSE}
+```{r improved-staff-plot, fig.width = 10, fig.fullwidth = TRUE, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 staff_long %>%
   ggplot(aes(x = year, 
@@ -225,10 +225,10 @@ staff_long %>%
              color = faculty_type)) +
   geom_line() +
   labs(
-    title = "___",
-    x = "___",
-    y = "___",
-    color = "___"
+    title = "Trends in Instructional Staff Employment from 1975 to 2011",
+    x = "Year",
+    y = "Percentage of Hires (%)",
+    color = "Instructional Staff Title"
   )
 ```
 
@@ -242,6 +242,7 @@ staff_long %>%
 🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercise 1", and push your changes.**
 
 ---
+
 
 ## Exercise 2
 
@@ -271,17 +272,17 @@ Suppose the objective of this plot was to show that the proportion of part-time 
 
 **Your proposed changes (write at least 3):**
 
-- Change 1: 
+- Change 1: I would change the colors of any non part time positions into something less vibrant
 
-  Why: 
+  Why: This would help with highlighting only the proportion of part time faculty, because we have this objective the non part time roles aren't going to be something we'd look at.
 
-- Change 2: 
+- Change 2: I would scale down the y-axis
 
-  Why: 
+  Why: The y-axis currently starts near 10% and goes to ~42%, but having it start at 0 tightening the range to where the part time data actually lives removes wasted white space and makes the differences between trends more visually pronounced and easier to read.
 
-- Change 3: 
+- Change 3: I would add an annotation directly onto the part timer's trend line that describes crossover moment when part time trend movement surpasses full time.
 
-  Why: 
+  Why: This will make it easier for viewers to analyze what is happening with the trends.
   
 ---
 
@@ -298,27 +299,82 @@ Implement the changes you proposed in the previous exercise.
 - Use `gghighlight` package (if you want to explore)
 
 **To change colors manually:**
-```{r eval = FALSE}
-scale_color_manual(values = c("Part-Time Faculty" = "red", 
-                               "Full-Time Tenured Faculty" = "gray60",
-                               # ... etc
-                               ))
+```{r eval = TRUE}
+ggplot(staff_long, aes(x = year, y = value, color = faculty_type, linewidth = faculty_type)) +
+  geom_line() +
+  scale_color_manual(values = c(
+    "part_time" = "red",
+    "full_time_tenured" = "gray60",
+    "full_time_tenure_track" = "gray60",
+    "full_time_non_tenure_track" = "gray60",
+    "grad_student" = "gray60"
+  )) +
+  scale_linewidth_manual(values = c(
+    "part_time" = 1.5,
+    "full_time_tenured" = 0.5,
+    "full_time_tenure_track" = 0.5,
+    "full_time_non_tenure_track" = 0.5,
+    "grad_student" = 0.5
+  )) +
+  scale_y_continuous(limits = c(0, 45), breaks = seq(0, 45, by = 10)) +
+  annotate("text", x = 1998, y = 36, 
+           label = "Part-time surpasses\nFull-Time Tenured (~1993)", 
+           color = "red", size = 3) +
+  labs(
+    title = "Trends in Instructional Staff Employment (1975–2011)",
+    x = "Year",
+    y = "Percentage of Hires (%)",
+    color = "Faculty Type"
+  ) +
+  guides(linewidth = "none")
 ```
 
 **To add annotations:**
-```{r eval = FALSE}
-annotate("text", x = 2005, y = 40, label = "Part-time faculty rising")
+```{r eval = TRUE}
+ggplot(staff_long, aes(x = year, y = value, color = faculty_type, linewidth = faculty_type)) +
+  geom_line() +
+  annotate("text", x = 1993, y = 40, label = "Part-time faculty rising", color = "red", size = 2.5) +
+  labs(
+    title = "Trends in Instructional Staff Employment (1975–2011)",
+    x = "Year",
+    y = "Percentage of Hires (%)",
+    color = "Instructional Staff Title"
+  ) +
+  guides(linewidth = "none")
 ```
 
 **Your improved visualization:**
-```{r storytelling-plot, fig.width = 10, fig.fullwidth = TRUE, eval = FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
-# Your code here - build on your Exercise 1 code
+```{r storytelling-plot, fig.width = 10, fig.fullwidth = TRUE, eval = TRUE}
+ggplot(staff_long, aes(x = year, y = value, color = faculty_type, linewidth = faculty_type)) +
+  geom_line() +
+scale_color_manual(values = c(
+  "part_time" = "red",
+  "full_time_tenured" = "gray60",
+  "full_time_tenure_track" = "gray60",
+  "full_time_non_tenure_track" = "gray60",
+  "grad_student" = "gray60"
+)) +
+scale_linewidth_manual(values = c(
+    "part_time" = 1.5,
+    "full_time_tenured" = 0.5,
+    "full_time_tenure_track" = 0.5,
+    "full_time_non_tenure_track" = 0.5,
+    "grad_student" = 0.5
+  )) +
+  scale_y_continuous(limits = c(0, 45), breaks = seq(0, 45, by = 10)) +
+  annotate("text", x = 1993, y = 40, label = "Part-time faculty rising", color = "red", size = 3.5) +
+  labs(
+    title = "Trends in Instructional Staff Employment (1975–2011)",
+    x = "Year",
+    y = "Percentage of Hires (%)",
+    color = "Instructional Staff Title"
+  ) +
+  guides(linewidth = "none")
 ```
 
 **Explain your design decisions:** Write a brief paragraph (3-5 sentences) describing the changes you made and how they help tell the story that part-time faculty proportions have increased.
 
-
+I made three key design changes. First, I colored the part-time faculty line red while graying out all other faculty types, immediately drawing the viewer's eye to the trend we care about without removing context. Second, I made the part-time line thicker than the others, further reinforcing its visual importance. Third, I adjusted the y-axis to start at 0 for a more honest representation of the data and added a direct annotation marking the crossover point where part-time faculty surpassed full-time tenured faculty around 1993, giving viewers a clear reference moment that anchors the story being told.
 
 🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercises 2-3", and push your changes.**
 
@@ -345,23 +401,24 @@ Can you help them improve it? First, brainstorm how you would improve it. Write 
 
 **Problems with the original plot:**
 
-- Problem 1: 
+- Problem 1: Scale is very small and its hard to read labels. 
 
-- Problem 2: 
+- Problem 2: Its difficult to distinguish between the different sections without the pie chart.
 
-- Problem 3: 
+- Problem 3: Some sections in the pipe chart are way to small of a sliver to properly analyze or read and there are too many sections.
 
-- Problem 4: 
+- Problem 4:  the labels are not enough to represent all countries.
 
 **Proposed improvements:** For each problem above, suggest a solution:
 
-- Improvement 1: 
+- Improvement 1: Use coord_flip() to make country labels horizontal and increase font size so they're readable
 
-- Improvement 2: 
+- Improvement 2: Switch from pie charts to a bar chart so lengths are easy to compare
 
-- Improvement 3: 
+- Improvement 3: Filter to only top 20 countries using slice_max() to remove tiny slivers
 
-- Improvement 4: 
+- Improvement 4: Use pivot_longer() to show both capture and aquaculture as separate bars side by side
+
 
 **Possible issues to consider:**
 
@@ -396,45 +453,62 @@ Create a new data visualisation for these data that implements the improvements 
 **Some suggestions to consider (you don't have to use all of these!):**
 
 **Reordering data:**
-```{r eval = FALSE}
+```{r eval = TRUE}
 fisheries %>%
   mutate(country = fct_reorder(country, total))  # Order by total
 ```
 
 **Filtering for top countries:**
-```{r eval = FALSE}
+```{r eval = TRUE}
 fisheries %>%
   slice_max(total, n = 20)  # Keep only top 20
 ```
 
 **Better color palettes:**
-```{r eval = FALSE}
+```{r eval = TRUE}
 scale_fill_viridis_d()          # Colorblind-friendly
 scale_fill_brewer(palette = "Set2")  # ColorBrewer palettes
 ```
 
 **Horizontal bars for readability:**
-```{r eval = FALSE}
+```{r eval = TRUE}
 coord_flip()  # Makes bars horizontal so country names are readable
 ```
 
 **Clearer labels:**
-```{r eval = FALSE}
+```{r eval = TRUE}
 labs(title = "...", x = "...", y = "...", fill = "...")
 ```
 
 **Your improved visualization:**
-```{r improved-fisheries-plot, fig.width = 8, fig.height = 10, eval = FALSE}
+```{r improved-fisheries-plot, fig.width = 8, fig.height = 10, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
-# Your code here
+fisheries %>%
+  slice_max(total, n = 20) %>%
+  pivot_longer(
+    cols = c(capture, aquaculture),
+    names_to = "type",
+    values_to = "amount"
+  ) %>%
+  mutate(country = fct_reorder(country, total)) %>%
+  ggplot(aes(x = country, y = amount, fill = type)) +
+  geom_col(position = "dodge") +
+  coord_flip() +
+  scale_fill_brewer(palette = "Set2") +
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    title = "Top 20 Countries by Fisheries Production",
+    x = "Country",
+    y = "Amount (tonnes)",
+    fill = "Production Type"
+  )
 ```
 
 **Explain your design decisions:** Write a paragraph (4-6 sentences) describing the changes you made and how they improve the visualization.
-
-
+I replaced the original pie charts and bar chart with a single horizontal grouped bar chart showing the top 20 countries by total production. Switching from pie charts to bars makes it far easier to compare values across countries since humans perceive length much more accurately than angle or area. Filtering to the top 20 removes the dozens of tiny countries that were unreadable slivers in the pie chart. Using coord_flip() makes all country names horizontal and fully readable instead of cramped and rotated. Finally, showing capture and aquaculture as side-by-side bars within the same plot lets viewers directly compare both production types per country without switching between two separate charts.
 
 **Did your improved visualization accomplish your goals?** Are there any improvements you proposed that you weren't able to implement? If so, what are they?
-
+labels are now readable, comparisons between countries and production types are clear, tiny unreadable countries are removed, and all displayed countries are also properly labeled.
 
 
 🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercises 4-5", and push your changes.**
