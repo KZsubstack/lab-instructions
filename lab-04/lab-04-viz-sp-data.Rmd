@@ -15,7 +15,7 @@ output:
 link-citations: true
 ---
 ```{r include = FALSE}
-knitr::opts_chunk$set(eval = FALSE)
+knitr::opts_chunk$set(eval = TRUE)
 ```
 ```{r fig.margin = TRUE, echo = FALSE, eval = TRUE}
 knitr::include_graphics("img/mitch-hedgeberg-lqd.jpg")
@@ -208,7 +208,7 @@ The `<-` assignment operator saves the result. Without it, R will display the re
 ```
 
 **Complete the code:**
-```{r add-dennys-country, eval = FALSE}
+```{r add-dennys-country, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 dennys <- dennys %>%
   mutate(country = "United States")
@@ -261,7 +261,7 @@ laquinta %>%
 Add a country variable to the La Quinta dataset. Use the `case_when()` function to populate this variable based on the state codes. You'll need to refer to your notes from Exercise 7 about which country the non-US locations are in.
 
 **Complete the code:**
-```{r add-laquinta-country, eval = FALSE}
+```{r add-laquinta-country, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 laquinta %>%
   mutate(country = case_when(
@@ -291,7 +291,7 @@ Without the assignment, the code would create a new dataset with the `country` v
 ## Analyzing US Locations Only
 
 Going forward we will work with the data from the United States only. All Denny's locations are in the United States, so we don't need to worry about them. However we do need to filter the La Quinta dataset for locations in United States.
-```{r filter-us-laquinta, eval = FALSE}
+```{r filter-us-laquinta, eval = TRUE}
 laquinta %>%
   filter(country == "United States")
 ```
@@ -301,7 +301,7 @@ laquinta %>%
 Which states have the most and fewest Denny's locations? What about La Quinta? Is this surprising? Why or why not?
 
 **First, count locations by state:**
-```{r count-by-state, eval = FALSE}
+```{r count-by-state, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 
 # Denny's by state
@@ -353,7 +353,7 @@ dennys %>%
 Which states have the most Denny's locations per thousand square miles? What about La Quinta?
 
 **Build on the code above to calculate density:**
-```{r dennys-density, eval = FALSE}
+```{r dennys-density, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 dennys %>%
   count(state) %>%
@@ -365,7 +365,7 @@ dennys %>%
 **Hint:** Density = number of locations / area * 1000
 
 **Now do the same for La Quinta:**
-```{r laquinta-density, eval = FALSE}
+```{r laquinta-density, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 laquinta_density <- laquinta %>%
   inner_join(states, by = c("state" = "abbreviation")) %>%
@@ -408,7 +408,7 @@ dn_lq <- bind_rows(dennys, laquinta)
 
 We can plot the locations of the two establishments using a scatter plot, and color the points by the establishment type. Note that the longitude is plotted on the x-axis and the latitude on the y-axis.
 
-```{r plot-all-locations, eval = FALSE}
+```{r plot-all-locations, eval = TRUE}
 ggplot(dn_lq, mapping = aes(x = longitude, y = latitude, color = establishment)) +
   geom_point()
 ```
@@ -423,7 +423,7 @@ Filter the data for observations in North Carolina only, and recreate the plot. 
 
 **Create the filtered plot:**
 
-```{r nc-plot, eval = FALSE}
+```{r nc-plot, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 dn_lq %>%
   filter(state == "NC") %>%
@@ -448,7 +448,7 @@ the joke partially holds in North Carolina. Around the central part of the state
 
 Now filter the data for observations in Texas only, and recreate the plot with an appropriate alpha level. Visually, does Mitch Hedberg's joke appear to hold here?
 
-```{r texas-plot, eval = FALSE}
+```{r texas-plot, eval = TRUE}
 dn_lq %>%
   filter(state == "TX") %>%
   ggplot(mapping = aes(x = longitude, y = latitude, color = establishment)) +
