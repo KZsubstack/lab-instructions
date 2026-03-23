@@ -15,7 +15,7 @@ output:
 link-citations: true
 ---
 ```{r include = FALSE}
-knitr::opts_chunk$set( eval = TRUE)
+knitr::opts_chunk$set(eval = FALSE)
 ```
 ```{r fig.margin = TRUE, echo = FALSE, eval = TRUE}
 knitr::include_graphics("img/mitch-hedgeberg-lqd.jpg")
@@ -49,10 +49,10 @@ By the end of this lab, you will be able to:
 
 Before you begin, make sure you have:
 
--  Completed Labs 01-03
--  Watched lectures on data wrangling and joins
--  Forked the lab-instructions repository
--  Understand the basics of latitude and longitude
+- ✅ Completed Labs 01-03
+- ✅ Watched lectures on data wrangling and joins
+- ✅ Forked the lab-instructions repository
+- ✅ Understand the basics of latitude and longitude
 
 **Note on spatial data:** Latitude and longitude are coordinates that specify locations on Earth's surface. Latitude runs North-South (higher values = further north), and longitude runs East-West (in the US, longitude values are negative, with more negative = further west).
 
@@ -84,7 +84,7 @@ Before we introduce the data, let's warm up with some simple exercises.
 
 **Step 4:** Push to GitHub and verify the changes are visible in your repo.
 
- **Knit, commit with message "Completed warm up", and push your changes.**
+🧶 ✅ ⬆️ **Knit, commit with message "Completed warm up", and push your changes.**
 
 ---
 
@@ -123,7 +123,7 @@ What are the dimensions of the Denny's dataset? What does each row in the datase
 
 **Use inline code to report dimensions.** In your narrative text, you can use inline R code with the functions `nrow()` and `ncol()` to report the number of rows and columns.
 
-**Your answer:** The Denny's dataset has 1,643 rows and 6 columns. Each row represents one Denny's location, more specifically "locations of 1643 Denny's Restaurants in the United States" according to the description of the dataset. The variables are it's address, city, state, zip, longitude, and latitude
+**Your answer:** The Denny's dataset has 1,643 rows and 6 columns. Each row represents one Denny's location, more specifically "locations of 1643 Denny's Restaurants in the United States" according to the description of the dataset. The variables are it's address, city, state, zip, longitude, and latitude.
 
 **Hint:** Run `glimpse(dennys)` or `?dennys` to see variable descriptions.
 
@@ -135,7 +135,7 @@ What are the dimensions of the La Quinta dataset? What does each row in the data
 
 **Your answer:** The La Quinta dataset has 909 rows and 6 columns. Each row represents locations of La Quinta Inn in the US. The variables are it's address, city, state, zip, longitude, and latitude.
 
- **Knit, commit with message "Completed Exercises 1-2", and push your changes.**
+🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercises 1-2", and push your changes.**
 
 ---
 
@@ -157,7 +157,9 @@ Colombia
 Mexico
 
 **Denny's locations outside the US:**
+
 None outside of US
+
 
 ---
 
@@ -169,6 +171,11 @@ Now take a look at the data (use `View(dennys)` and `View(laquinta)` in the Cons
 We could look for unusual state or province codes in the state column that belong to other countries instead of U.S. states, using the states dataset.
 
 Since both datasets have long and lat columns we could know the min/max of both long and lat for the area of the USA and filter any entry that is outside of that range. 
+
+We will determine whether or not the establishment has a location outside the US using the `state` variable in the `dennys` and `laquinta` datasets. We know exactly which states are in the US, and we have this information in the `states` dataframe we loaded.
+
+
+---
 
 We will determine whether or not the establishment has a location outside the US using the `state` variable in the `dennys` and `laquinta` datasets. We know exactly which states are in the US, and we have this information in the `states` dataframe we loaded.
 
@@ -201,7 +208,7 @@ The `<-` assignment operator saves the result. Without it, R will display the re
 ```
 
 **Complete the code:**
-```{r add-dennys-country,  eval = TRUE}
+```{r add-dennys-country, eval = FALSE}
 # Remember to change eval=FALSE to eval=TRUE!
 dennys <- dennys %>%
   mutate(country = "United States")
@@ -254,9 +261,9 @@ laquinta %>%
 Add a country variable to the La Quinta dataset. Use the `case_when()` function to populate this variable based on the state codes. You'll need to refer to your notes from Exercise 7 about which country the non-US locations are in.
 
 **Complete the code:**
-```{r add-laquinta-country,  eval = TRUE}
+```{r add-laquinta-country, eval = FALSE}
 # Remember to change eval=FALSE to eval=TRUE!
-laquinta <- laquinta %>%
+laquinta %>%
   mutate(country = case_when(
     state %in% state.abb     ~ "United States",
     state %in% c("ON", "BC") ~ "Canada",
@@ -277,14 +284,14 @@ Without the assignment, the code would create a new dataset with the `country` v
 **Verify it worked:** Run `count(laquinta, country)` in your Console. You should see multiple countries listed with their counts.
 
 
- **Knit, commit with message "Completed Exercises 7-8", and push your changes.**
+🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercises 7-8", and push your changes.**
 
 ---
 
 ## Analyzing US Locations Only
 
 Going forward we will work with the data from the United States only. All Denny's locations are in the United States, so we don't need to worry about them. However we do need to filter the La Quinta dataset for locations in United States.
-```{r filter-us-laquinta,  eval = TRUE}
+```{r filter-us-laquinta, eval = FALSE}
 laquinta %>%
   filter(country == "United States")
 ```
@@ -294,7 +301,7 @@ laquinta %>%
 Which states have the most and fewest Denny's locations? What about La Quinta? Is this surprising? Why or why not?
 
 **First, count locations by state:**
-```{r count-by-state,  eval = TRUE}
+```{r count-by-state, eval = FALSE}
 # Remember to change eval=FALSE to eval=TRUE!
 
 # Denny's by state
@@ -304,8 +311,8 @@ dennys %>%
 
 # La Quinta by state
 laquinta %>%
-  count(state) %>%
-  arrange(desc(n))
+  arrange(desc(n)) %>%
+  select(state, n)
 ```
 
 **Your findings:**
@@ -318,11 +325,11 @@ laquinta %>%
 **La Quinta:**
 
 - State with most locations: Texas
-- State with fewest locations: Veracruz Mexico
+- State with fewest locations: Maine
 
 **Is this surprising? Why or why not?**
 
-This is not very surprising because the states with the most locations for both Denny’s and La Quinta are California, Texas, and Florida. These are some of the largest states in the country, so it makes sense that both restaurant and hotel chains would have many locations there. It also makes sense that their rankings do not match exactly, since hotels and restaurants may expand differently depending on travel. This does not necessarily weaken the claim that there is a higher chance of finding a La Quinta near a Denny’s, or vice versa, because the overall number of locations in a state is different from how closely the two chains are clustered together within that state. The smaller counts in places like Delaware are also not surprising because those states have less land area and smaller populations.
+This is not very surprising. California having the most Denny's makes sense since it is the most populated state in the country. Texas having the most La Quinta locations also makes sense since La Quinta was actually founded in San Antonio so the chain naturally expanded there first. Delaware and Maine having the fewest locations for each is not surprising either since both are small states with smaller populations and less highway traffic compared to the rest of the country.
 ---
 
 ## Calculating Density
@@ -346,7 +353,7 @@ dennys %>%
 Which states have the most Denny's locations per thousand square miles? What about La Quinta?
 
 **Build on the code above to calculate density:**
-```{r dennys-density,  eval = TRUE}
+```{r dennys-density, eval = FALSE}
 # Remember to change eval=FALSE to eval=TRUE!
 dennys %>%
   count(state) %>%
@@ -358,9 +365,9 @@ dennys %>%
 **Hint:** Density = number of locations / area * 1000
 
 **Now do the same for La Quinta:**
-```{r laquinta-density,  eval = TRUE}
-laquinta %>%
-  count(state) %>%
+```{r laquinta-density, eval = FALSE}
+# Remember to change eval=FALSE to eval=TRUE!
+laquinta_density <- laquinta %>%
   inner_join(states, by = c("state" = "abbreviation")) %>%
   mutate(density = n / area * 1000) %>%
   arrange(desc(density))
@@ -370,7 +377,7 @@ laquinta %>%
 
 **Denny's:**
 
-- State with highest density: District of Columbia
+- State with highest density: Rhode Island
 - Density value: 29.265437518
 
 **La Quinta:**
@@ -378,7 +385,7 @@ laquinta %>%
 - State with highest density: Rhode Island
 - Density value: 1.294590553
 
- **Knit, commit with message "Completed Exercises 9-10", and push your changes.**
+🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercises 9-10", and push your changes.**
 
 ---
 
@@ -388,7 +395,7 @@ Next, we put the two datasets together into a single data frame. However before 
 ```{r add-establishment, eval = TRUE}
 dennys <- dennys %>%
   mutate(establishment = "Denny's")
-
+laquinta <- dsbox::laquinta
 laquinta <- laquinta %>%
   mutate(establishment = "La Quinta")
 ```
@@ -401,7 +408,7 @@ dn_lq <- bind_rows(dennys, laquinta)
 
 We can plot the locations of the two establishments using a scatter plot, and color the points by the establishment type. Note that the longitude is plotted on the x-axis and the latitude on the y-axis.
 
-```{r plot-all-locations,  eval = TRUE}
+```{r plot-all-locations, eval = FALSE}
 ggplot(dn_lq, mapping = aes(x = longitude, y = latitude, color = establishment)) +
   geom_point()
 ```
@@ -416,14 +423,14 @@ Filter the data for observations in North Carolina only, and recreate the plot. 
 
 **Create the filtered plot:**
 
-```{r nc-plot,  eval = TRUE}
+```{r nc-plot, eval = FALSE}
 # Remember to change eval=FALSE to eval=TRUE!
 dn_lq %>%
   filter(state == "NC") %>%
   ggplot(mapping = aes(x = longitude, y = latitude, color = establishment)) +
-  geom_point(alpha = 0.5) +
+  geom_point(alpha = 0.6) +
   labs(
-    title = "NC locations",
+    title = "Denny's and La Quinta Locations in North Carolina",
     x = "Longitude",
     y = "Latitude"
   )
@@ -433,7 +440,7 @@ dn_lq %>%
 
 **Does Mitch Hedberg's joke appear to hold in North Carolina?** (Are Denny's and La Quinta locations close together?)
 
-
+the joke partially holds in North Carolina. Around the central part of the state where longitude is -81 to -80 and -79 to -78 you can see teal and pink points clustering closely together. However there are many Denny's locations in the southern and western parts of the state with no La Quinta nearby at all, so the joke doesn't hold perfectly across the whole state.
 
 ---
 
@@ -441,28 +448,29 @@ dn_lq %>%
 
 Now filter the data for observations in Texas only, and recreate the plot with an appropriate alpha level. Visually, does Mitch Hedberg's joke appear to hold here?
 
-```{r texas-plot,  eval = TRUE}
+```{r texas-plot, eval = FALSE}
 dn_lq %>%
   filter(state == "TX") %>%
   ggplot(mapping = aes(x = longitude, y = latitude, color = establishment)) +
-  geom_point(alpha = 0.2) +
+  geom_point(alpha = 0.4) +
   labs(
-    title = "NC locations",
+    title = "Denny's and La Quinta Locations in Texas",
     x = "Longitude",
     y = "Latitude"
   )
 ```
 
 **Does Mitch Hedberg's joke appear to hold in Texas?**
-Many Denny’s and La Quinta locations are near each other and appear in a few large clusters together, which gives Mitch Hedberg’s joke some support. But if we take the joke literally, there are still many La Quinta locations with no Denny’s nearby, so the two do not consistently overlap in Texas. From a broader perspective, though, the joke may hold somewhat true on average.
+
+Yes, way more than in North Carolina. The pink and teal points are heavily overlapping and clustered together, especially around Dallas and Houston.
 
 
 **Compare North Carolina and Texas: In which state does the joke seem more accurate?**
 
-Definitely Texas, in North Carolina there are many isolated Denny's, this could be because in Texas many establishments will cluster around the larger cities, however overall Texas has more locations that overlap both establishments
+The joke holds better in Texas. In North Carolina there were a lot of Denny's with no La Quinta anywhere close by. In Texas the two establishments are consistently next to each other across the whole state, which makes sense since La Quinta was founded in San Antonio so that's where the highest concentration of both locations are.
 
 
- **Knit, commit with message "Completed Exercises 11-12", and push your changes.**
+🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercises 11-12", and push your changes.**
 
 ---
 
