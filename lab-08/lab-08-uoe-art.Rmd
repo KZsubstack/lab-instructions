@@ -258,12 +258,12 @@ uoe_art <- uoe_art %>%
 Now let's extract just the year from the date column and save it as a numeric variable.
 
 **Fill in the blanks:**
-```{r extract-year, eval = FALSE}
+```{r extract-year, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 uoe_art <- uoe_art %>%
   mutate(
-    year = str_extract(___, "\\d{4}"),     # Extract 4-digit number
-    year = as.numeric(___)                  # Convert to numeric
+    year = str_extract(date, "\\d{4}"),     # Extract 4-digit number
+    year = as.numeric(year)                  # Convert to numeric
   )
 ```
 
@@ -282,15 +282,15 @@ uoe_art <- uoe_art %>%
 ## Exercise 10
 
 Print out a summary of the data frame using the `skim()` function. How many pieces have artist info missing? How many have year info missing?
-```{r skim-data, eval = FALSE}
+```{r skim-data, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
-skim(___)
+skim(uoe_art)
 ```
 
 **Your findings:**
 
-- Number of pieces with missing artist: _____
-- Number of pieces with missing year: _____
+- Number of pieces with missing artist: 106	
+- Number of pieces with missing year: 507
 
 **Why might this information be missing?**
 
@@ -301,14 +301,14 @@ skim(___)
 ## Exercise 11
 
 Make a histogram of years. Use a reasonable binwidth. Do you see anything out of the ordinary?
-```{r year-histogram, eval = FALSE}
+```{r year-histogram, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
-ggplot(data = uoe_art, aes(x = ___)) +
-  geom_histogram(binwidth = ___) +
+ggplot(data = uoe_art, aes(x = year)) +
+  geom_histogram(binwidth = 20) +
   labs(
-    title = "___",
-    x = "___",
-    y = "___"
+    title = "Distribution of Edinburgh College of Art Collection by Year",
+    x = "Year",
+    y = "Number of Art Pieces"
   )
 ```
 
@@ -316,6 +316,10 @@ ggplot(data = uoe_art, aes(x = ___)) +
 
 **What looks out of the ordinary?**
 
+The small column around 1700 looks like the outlier it's isolated from the rest of the collection. and also this warning
+
+This warning: Warning	
+Warning: [38;5;232mRemoved 781 rows containing non-finite outside the scale range (`stat_bin()`).[39m
 
 
 🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercises 10-11", and push your changes.**
@@ -327,16 +331,16 @@ ggplot(data = uoe_art, aes(x = ___)) +
 Find which piece has the out of the ordinary year and go to its page on the art collection website to find the correct year for it. Can you tell why our code didn't capture the correct year information? Correct the error in the data frame and visualize the data again.
 
 **Find the problematic observation:**
-```{r find-outlier, eval = FALSE}
+```{r find-outlier, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 uoe_art %>%
-  filter(year < 1000 | year > 2030)  # Look for unreasonable years
+  filter(year < 1750)  # Look for unreasonable years
 ```
 
 **Visit the link for this piece and find the correct year:** 
-
+The dates listed are ranges (e.g., 1700-1799, 1700-1850), not single years.
 **Why didn't our code capture it correctly?**
-
+str_extract("\\d{4}") grabs only the first 4-digit number it finds, so for a range like "1700-1799" it extracts "1700" and ignores the rest. The dates are ranges, not single years, so there's no single correct year to extract.
 
 
 **Correct the error:**
@@ -344,16 +348,22 @@ uoe_art %>%
 # Remember to change eval=FALSE to eval=TRUE!
 uoe_art <- uoe_art %>%
   mutate(year = if_else(
-    ___ == "___",          # Condition: if title equals the problematic one
-    ___,                    # Then: set year to correct value
-    ___                     # Else: keep original year
+    title == "Chair seat",          # Condition: if title equals the problematic one
+    1775,                    # Then: set year to correct value
+    year                     # Else: keep original year
   ))
 ```
 
 **Recreate the histogram to verify the fix:**
-```{r verify-fix, eval = FALSE}
+```{r verify-fix, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
-# Your histogram code from Exercise 11
+ggplot(data = uoe_art, aes(x = year)) +
+  geom_histogram(binwidth = 10) +
+  labs(
+    title = "Distribution of Edinburgh College of Art Collection by Year",
+    x = "Year",
+    y = "Number of Art Pieces"
+  )
 ```
 
 ---
@@ -364,21 +374,22 @@ Who is the most commonly featured artist in the collection? Do you know them? An
 ```{r most-common-artist, eval = FALSE}
 # Remember to change eval=FALSE to eval=TRUE!
 uoe_art %>%
-  count(___, sort = TRUE) %>%
+  count(artist, sort = TRUE) %>%
   head(10)
 ```
 
 **Most common artist:** 
-
+Unknown, Known would be Emma Gillies
 **Number of pieces:** 
-
+319 for unknown 144 for Emma Gilles
 **Do you know this artist?** 
-
+No I do not know Emma Gilles nor unknown
 
 
 
 **Why might the university have so many of their pieces?**
 
+Emma Gillies was could've been a student or faculty member at Edinburgh College of Art, so the university collected her work.
 
 
 🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercises 12-13", and push your changes.**
@@ -395,16 +406,16 @@ Final question! How many art pieces have the word "child" in their title? Make s
 
 # Option 1: Case-insensitive search
 uoe_art %>%
-  filter(str_detect(___, "(?i)child")) %>%
+  filter(str_detect(title, "(?i)child")) %>%
   nrow()
 
 # Option 2: Convert to lowercase first
 uoe_art %>%
-  filter(str_detect(str_to_lower(___), "___")) %>%
+  filter(str_detect(str_to_lower(title), "child")) %>%
   nrow()
 ```
 
-**Number of pieces with "child" in the title:** _____
+**Number of pieces with "child" in the title:** 8
 
 🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercise 14", and push your changes.**
 

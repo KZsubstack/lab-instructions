@@ -124,7 +124,7 @@ glimpse(uoe_art)
 # Save the scraped data to a CSV file so we can use it in the analysis
 
 # Fill in the blanks:
-write_csv(uoe_art, "data/uoe_art.csv")
+write_csv(uoe_art, "lab-08/data/uoe_art.csv")
 
 # Hint: 
 # - First argument: the data frame to save (uoe_art)
