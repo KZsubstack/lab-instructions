@@ -1,16 +1,11 @@
 ---
-title: "Lab 08 - University of Edinburgh Art Collection"
-author: "Kaden Zhu"
-output: 
-  tufte::tufte_html:
-    css: ../lab.css
-    tufte_variant: "envisioned"
-    highlight: pygments
-  tufte::tufte_handout:
+output:
+  pdf_document:
     latex_engine: xelatex
-    highlight: pygments
-    keep_tex: true
-link-citations: yes
+  output: default
+author: "Kaden Zhu"
+title: "Lab 08 - University of Edinburgh Art Collection"
+link-citations: true
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(eval = TRUE)
@@ -51,11 +46,11 @@ By the end of this lab, you will be able to:
 
 Before you begin, make sure you have:
 
-- ✅ Completed Labs 01-07
-- ✅ Watched lectures on functions, iteration, and web scraping
-- ✅ **Installed SelectorGadget browser extension** (see instructions below)
-- ✅ Forked the lab-instructions repository
-- ✅ Understand HTML basics and CSS selectors
+  Completed Labs 01-07
+  Watched lectures on functions, iteration, and web scraping
+  **Installed SelectorGadget browser extension** (see instructions below)
+  Forked the lab-instructions repository
+  Understand HTML basics and CSS selectors
 
 **IMPORTANT: Install SelectorGadget**
 
@@ -129,7 +124,7 @@ Step 3. Check that the Git pane shows YOUR username (not the course organization
 
 **Step 4:** Push to GitHub and verify the changes are visible in your repo.
 
-🧶 ✅ ⬆️ **Knit, commit with message "Completed warm up", and push your changes.**
+ **Knit, commit with message "Completed warm up", and push your changes.**
 
 ---
 
@@ -171,7 +166,7 @@ paths_allowed("https://collections.ed.ac.uk/art")
 
 **What this means:** If the result is `TRUE`, we have permission to scrape. If `FALSE`, we should not proceed.
 
-✅ **Verified!** We can proceed with scraping.
+**Verified!** We can proceed with scraping.
 
 ---
 
@@ -191,7 +186,7 @@ For the web scraping portion, you'll work in the three R scripts in the `scripts
 
 After you complete all three scripts, you'll have a CSV file in your `data` folder with information about all the art pieces. Then you'll come back to this document to analyze the data.
 
-🧶 ✅ ⬆️ **Remember to commit and push after completing each script!**
+ **Remember to commit and push after completing each script!**
 
 ---
 
@@ -202,13 +197,13 @@ After you complete all three scripts, you'll have a CSV file in your `data` fold
 Let's load that data and analyze it.
 
 ## Load the Scraped Data
-```{r load-scraped-data, eval = FALSE}
-#remember to switch eval = FALSE to TRUE when you have your data
+```{r load-scraped-data, eval = TRUE}
+#remember to switch eval = TRUE to TRUE when you have your data
 uoe_art <- read_csv("data/uoe_art.csv")
 ```
 
 **Verify it loaded correctly:**
-```{r verify-data, eval = FALSE}
+```{r verify-data, eval = TRUE}
 glimpse(uoe_art)
 ```
 
@@ -226,7 +221,7 @@ Now that we have the data, let's clean it up! Many titles have dates in parenthe
 - `date`: The date information (if it exists)
 
 We'll use the `separate()` function to split at the first `(` character:
-```{r separate-title-date, eval = FALSE}
+```{r separate-title-date, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 uoe_art <- uoe_art %>%
   separate(
@@ -275,7 +270,7 @@ uoe_art <- uoe_art %>%
 
 
 
-🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercise 9", and push your changes.**
+ **Knit, commit with message "Completed Exercise 9", and push your changes.**
 
 ---
 
@@ -301,7 +296,7 @@ skim(uoe_art)
 ## Exercise 11
 
 Make a histogram of years. Use a reasonable binwidth. Do you see anything out of the ordinary?
-```{r year-histogram, eval = TRUE}
+```{r year-histogram, eval = TRUE, fig.pos = "H"}
 # Remember to change eval=FALSE to eval=TRUE!
 ggplot(data = uoe_art, aes(x = year)) +
   geom_histogram(binwidth = 20) +
@@ -322,7 +317,7 @@ This warning: Warning
 Warning: [38;5;232mRemoved 781 rows containing non-finite outside the scale range (`stat_bin()`).[39m
 
 
-🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercises 10-11", and push your changes.**
+ **Knit, commit with message "Completed Exercises 10-11", and push your changes.**
 
 ---
 
@@ -344,7 +339,7 @@ str_extract("\\d{4}") grabs only the first 4-digit number it finds, so for a ran
 
 
 **Correct the error:**
-```{r fix-year, eval = FALSE}
+```{r fix-year, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 uoe_art <- uoe_art %>%
   mutate(year = if_else(
@@ -371,7 +366,7 @@ ggplot(data = uoe_art, aes(x = year)) +
 ## Exercise 13
 
 Who is the most commonly featured artist in the collection? Do you know them? Any guess as to why the university has so many pieces from them?
-```{r most-common-artist, eval = FALSE}
+```{r most-common-artist, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 uoe_art %>%
   count(artist, sort = TRUE) %>%
@@ -392,7 +387,7 @@ No I do not know Emma Gilles nor unknown
 Emma Gillies was could've been a student or faculty member at Edinburgh College of Art, so the university collected her work.
 
 
-🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercises 12-13", and push your changes.**
+ **Knit, commit with message "Completed Exercises 12-13", and push your changes.**
 
 ---
 
@@ -401,7 +396,7 @@ Emma Gillies was could've been a student or faculty member at Edinburgh College 
 Final question! How many art pieces have the word "child" in their title? Make sure to capture both "child" and "Child".
 
 **Hint:** `str_detect()` can be helpful here. You can use `(?i)` in your pattern to make it case-insensitive, or use `str_to_lower()` first.
-```{r count-child, eval = FALSE}
+```{r count-child, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 
 # Option 1: Case-insensitive search
@@ -417,7 +412,7 @@ uoe_art %>%
 
 **Number of pieces with "child" in the title:** 8
 
-🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercise 14", and push your changes.**
+ **Knit, commit with message "Completed Exercise 14", and push your changes.**
 
 ---
 
@@ -456,10 +451,10 @@ uoe_art %>%
 ---
 
 **Final check:** 
-- ✅ All three R scripts completed and committed
-- ✅ CSV file in data folder
-- ✅ All exercises in this .Rmd completed
-- ✅ Everything pushed to GitHub
+  All three R scripts completed and committed
+  CSV file in data folder
+  All exercises in this .Rmd completed
+  Everything pushed to GitHub
 
 **Great work on completing this complex lab!**
 
