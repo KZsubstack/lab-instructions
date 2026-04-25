@@ -1,6 +1,6 @@
 ---
 title: "Lab 09 - Conveying the right message through visualisation"
-author: "Your Name"
+author: "Kaden Zhu"
 output: 
   tufte::tufte_handout:
     latex_engine: xelatex
@@ -100,8 +100,14 @@ knitr::include_graphics("img/masks-v-nomasks.png")
 **Think about:**
 
 - What story does this visualization appear to tell?
+
+The visualization shows over time the 7 day rolling average daily cases of COVID-19 per 100K population during the pandemic, comparing mask mandated counties to no-mask mandated counties in Kansas across about a month. At first glance it looks like mask mandated counties started with way higher cases around 25 and dropped significantly down to about 16 by early August, while no-mask mandated counties ranged between 8-10 daily cases with no significant movement. The way the two lines cross each other in the middle of the chart makes it look like masks worked so well that mask counties ended up with fewer cases than no-mask counties.
+
 - What design choices make it misleading?
+There are two scales for the Y axis which is the amount of daily cases per 100K population. The left Y axis represents the mask mandated counties and ranges from 15 to 25, while the right Y axis represents no-mask mandated counties and ranges from 4 to 14. This makes it hard to compare the two relatively, but worse than that it actually deceives the viewer because the two lines visually cross when in reality the mask counties had MORE cases per 100K the entire time, they just had a steeper decline. If both lines were on the same scale the orange mask line would be sitting above the blue no-mask line the whole time and never actually cross below it. The chart is using the mismatched scales to manufacture a crossover that didnt happen in the real numbers.
+
 - What would an honest version look like?
+A more honest version would put both lines on one unified Y axis so they can be compared directly at the same scale, ideally starting at 0 so the magnitude of the case rates is obvious. You could still tell the real story that mask counties saw a downward trend while no-mask counties stayed flat, but viewers would now see that mask counties still had higher absolute case rates even at the end of the period. It would also help to extend the time window since a month is pretty short to draw strong conclusions, and including confidence intervals or sample size notes for each group would give readers a better sense of how reliable these differences actually are.
 
 ---
 
@@ -114,8 +120,12 @@ Create a data frame that can be used to re-construct this visualization. You may
 Before writing code, answer these questions:
 
 - How many rows will you need? 
+I will probably need 46 rows for each recording for both mask and no mask counties
 - How many columns will you need? 
+I will need a column for yes or no mask mandated or not, I will need one for rolling average of daily cases per 100k population and then I will need a column for the time stamp or date and county.
+
 - What will you call your variables? 
+date, mandated?, rolling_avg_cases, county
 
 **Creating data with `tribble()`**
 
@@ -134,6 +144,8 @@ example_df
 
 The code to create this is:
 ```{r ref.label="tribble-example", eval = FALSE}
+
+
 ```
 
 **How `tribble()` works:**
@@ -148,9 +160,52 @@ The code to create this is:
 # Remember to change eval=FALSE to eval=TRUE!
 mask_data <- tribble(
   ~county, ~maskpolicy, ~deaths,
-  "Kansas", "___", ___,
-  "Kansas", "___", ___,
-  # Add more rows as needed
+  "Kansas", "Yes", 25.0,
+  "Kansas", "Yes", 20.0,
+  "Kansas", "Yes", 19.5,
+  "Kansas", "Yes", 20.0,
+  "Kansas", "Yes", 20.5,
+  "Kansas", "Yes", 19.5,
+  "Kansas", "Yes", 19.5,
+  "Kansas", "Yes", 20.0,
+  "Kansas", "Yes", 20.5,
+  "Kansas", "Yes", 21.5,
+  "Kansas", "Yes", 20.0,
+  "Kansas", "Yes", 19.5,
+  "Kansas", "Yes", 20.5,
+  "Kansas", "Yes", 20.0,
+  "Kansas", "Yes", 19.5,
+  "Kansas", "Yes", 17.0,
+  "Kansas", "Yes", 16.5,
+  "Kansas", "Yes", 16.0,
+  "Kansas", "Yes", 16.5,
+  "Kansas", "Yes", 16.0,
+  "Kansas", "Yes", 16.0,
+  "Kansas", "Yes", 15.5,
+  "Kansas", "Yes", 16.0,
+  "Kansas", "No",  10.0,
+  "Kansas", "No",  9.0,
+  "Kansas", "No",  9.0,
+  "Kansas", "No",  10.0,
+  "Kansas", "No",  10.0,
+  "Kansas", "No",  9.5,
+  "Kansas", "No",  9.5,
+  "Kansas", "No",  9.0,
+  "Kansas", "No",  9.0,
+  "Kansas", "No",  9.0,
+  "Kansas", "No",  8.5,
+  "Kansas", "No",  8.5,
+  "Kansas", "No",  9.5,
+  "Kansas", "No",  9.5,
+  "Kansas", "No",  10.0,
+  "Kansas", "No",  9.5,
+  "Kansas", "No",  9.5,
+  "Kansas", "No",  9.5,
+  "Kansas", "No",  9.5,
+  "Kansas", "No",  10.0,
+  "Kansas", "No",  9.0,
+  "Kansas", "No",  9.0,
+  "Kansas", "No",  9.5
 )
 ```
 
@@ -184,14 +239,20 @@ Make a visualization that more accurately (and honestly) tells the story.
 **Create your improved visualization:**
 ```{r improved-viz, eval = FALSE}
 # Remember to change eval=FALSE to eval=TRUE!
-ggplot(data = ___, aes(x = ___, y = ___, fill = ___)) +
-  geom__() +
+ggplot(data = mask_data, aes(x = maskpolicy, y = deaths, fill = maskpolicy)) +
+  geom_boxplot() +
+  scale_y_continuous(limits = c(0, 30)) +
+  scale_fill_manual(values = c("Yes" = "steelblue", "No" = "darkorange")) +
   labs(
-    title = "___",
-    x = "___",
-    y = "___",
-    fill = "___"
-  )
+    title = "Kansas COVID-19 7-Day Rolling Avg Daily Cases per 100K",
+    subtitle = "Mask Mandated vs. No-Mask Mandated Counties",
+    x = "Mask Mandate",
+    y = "7-Day Rolling Avg of Daily Cases per 100K",
+    fill = "Mask Mandate",
+    caption = "Source: Kansas Department of Health and Environment"
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold"))
 ```
 
 **Consider these options:**
@@ -207,16 +268,18 @@ ggplot(data = ___, aes(x = ___, y = ___, fill = ___)) +
 What message is more clear in your visualization than it was in the original visualization?
 
 **Compare the two visualizations:**
+The original is a line chart over time with two separate Y axes, one for mask counties and one for no-mask counties. Mine is a boxplot with just one Y axis that starts at 0 so both groups are on the same scale. The original uses time to tell a story, mine just shows what the numbers actually look like for each group.
 
 **Original visualization suggests:** 
-
+That mask counties started out way worse but then dropped below the no-mask counties by the end of July, making it look like masks worked so well they flipped the numbers around. The spot where the two lines cross in the middle is what sells it.
 
 
 **Your improved visualization shows:**
-
+That mask counties started out way worse but then dropped below the no-mask counties by the end of July, making it look like masks worked so well they flipped the numbers around. The spot where the two lines cross in the middle is what sells it.
 
 
 **What specific design choices made the difference?**
+Putting both groups on one Y axis instead of two different ones was the main fix. The original used two axes with different ranges to squish both lines into the same part of the chart, which faked the crossover. Starting at 0 also helps because you can see how big the numbers actually are. Using a boxplot instead of a time series also takes away the timeline that the original was using to tell a story, and just shows the raw comparison.
 
 
 
@@ -231,19 +294,16 @@ What, if any, useful information do these data and your visualization tell us ab
 **Important:** Try to set aside what you already know about mask wearing and focus only on what this visualization tells us. Then feel free to comment on whether that lines up with what you know about mask wearing.
 
 **What the data/visualization tells us:**
-
-
+Over about 3 weeks in July and early August 2020, Kansas counties with mask mandates had higher case rates per 100K than counties without mandates. Mask counties sat around 15-25 cases per 100K and no-mask counties sat around 8-10. If you look at the time series, mask counties were dropping while no-mask counties stayed flat, so mask counties were getting better even though they were still higher overall.
 
 **What the data/visualization does NOT tell us:**
-
-
+It doesnt tell us why mask counties had higher rates to begin with. Maybe those counties put mandates in place BECAUSE they already had bad outbreaks, which would mean were not really comparing the same kind of counties. It also doesnt say anything about population density, testing rates, or how many people actually followed the mandate. And 3 weeks is a pretty short window to draw any big conclusions from.
 
 **Does this align with what you know about mask wearing?**
-
+Sort of. Most research says masks help slow the spread, and the fact that mask counties were trending down while no-mask counties stayed flat kind of fits that. But this chart by itself isnt really strong evidence either way because theres too much missing context. The original misleading version of the chart was trying to make it look like masks made things worse, which is actually the opposite of what the real numbers show when you plot them honestly.
 
 **What additional information would you need to draw stronger conclusions?**
-
-
+A longer time window would help a lot, like a few months instead of 3 weeks. Id want to know why certain counties chose to have mandates and others didnt, so I could factor that in. Population density, demographics, and testing rates would all matter too. And itd be good to know how well people actually followed the mandate, since a rule on paper doesnt mean everyone was really wearing masks.
 
 🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercise 4", and push your changes.**
 
