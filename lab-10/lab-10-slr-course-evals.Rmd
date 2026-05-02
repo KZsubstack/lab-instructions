@@ -1,25 +1,25 @@
 ---
 title: "Lab 10 - Grading the professor, Pt. 1"
 subtitle: "Modeling with a single predictor"
-author: "Your Name"
-output: 
-  tufte::tufte_html:
-    css: ../lab.css
-    tufte_variant: "envisioned"
-    highlight: pygments
+author: "Kaden Zhu"
+output:
   tufte::tufte_handout:
     latex_engine: xelatex
     highlight: pygments
     keep_tex: true
+  tufte::tufte_html:
+    css: ../lab.css
+    tufte_variant: "envisioned"
+    highlight: pygments
 link-citations: yes
 ---
 ```{r include=FALSE}
-knitr::opts_chunk$set(eval = FALSE)
+knitr::opts_chunk$set(eval = TRUE)
 ```
 
 ## Introduction
 
-Many college courses conclude by giving students the opportunity to evaluate the course and the instructor anonymously. However, the use of these student evaluations as an indicator of course quality and teaching effectiveness is often criticized because these measures may reflect the influence of non-teaching related characteristics, such as the physical appearance of the instructor. 
+Many college courses conclude by giving students the opportunity to evaluate the course and the instructor anonymously. However, the use of these student evaluations as an indicator of course quality and teaching effectiveness is often criticized because these measures may reflect the influence of non-teaching related characteristics, such as the physical appearance of the instructor.
 
 The article titled, "Beauty in the classroom: instructors' pulchritude and putative pedagogical productivity" (Hamermesh and Parker, 2005) found that instructors who are viewed to be better looking receive higher instructional ratings. In this lab you will analyze the data from this study in order to learn what goes into a positive professor evaluation.
 
@@ -83,9 +83,11 @@ Step 3. Click **Knit** to make sure the document compiles
 
 We'll use the **tidyverse** package for much of the data wrangling and visualisation, the **tidymodels** package for modeling and inference, and the data lives in the **openintro** package. These packages are already installed for you. You can load them by running the following in your Console:
 ```{r load-packages, eval = TRUE, message = FALSE}
-library(tidyverse) 
+library(tidyverse)
 library(tidymodels)
 library(openintro)
+library(broom)
+library(sparsevctrs)
 ```
 
 ## Data
@@ -105,73 +107,68 @@ The data can be found in the **openintro** package, and it's called `evals`. Sin
 Visualize the distribution of `score`. Is the distribution skewed? What does that tell you about how students rate courses? Is this what you expected to see? Why, or why not? Include any summary statistics and visualizations you use in your response.
 
 **Create a histogram:**
-```{r score-histogram, eval = FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
-ggplot(data = evals, aes(x = ___)) +
-  geom_histogram(binwidth = ___) +
+```{r score-histogram, eval = TRUE}
+ggplot(data = evals, aes(x = score)) +
+  geom_histogram(binwidth = 0.25) +
   labs(
-    title = "___",
-    x = "___",
-    y = "___"
+    title = "Distribution of Professor Evaluation Scores",
+    x = "Average Evaluation Score",
+    y = "Count"
   )
 ```
 
 **Hint:** Try binwidths like 0.25 or 0.5 for scores.
 
 **Calculate summary statistics:**
-```{r score-summary, eval = FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
+```{r score-summary, eval = TRUE}
 evals %>%
   summarise(
-    min = min(___),
-    q1 = quantile(___, 0.25),
-    median = median(___),
-    mean = mean(___),
-    q3 = quantile(___, 0.75),
-    max = max(___),
-    sd = sd(___)
+    min = min(score),
+    q1 = quantile(score, 0.25),
+    median = median(score),
+    mean = mean(score),
+    q3 = quantile(score, 0.75),
+    max = max(score),
+    sd = sd(score)
   )
 ```
 
 **Describe the distribution:**
 
-**Shape (skewed left, skewed right, or symmetric?):** 
-
-
+**Shape (skewed left, skewed right, or symmetric?):** Skewed left. Most scores fall between 4.0 and 4.7. A few low scores stretch the left tail. The median (4.30) is higher than the mean (4.17), which lines up with left skew.
 
 **What does this tell you about how students rate courses?**
 
-
+Students rate courses high overall. Most courses score above 4 out of 5. Almost none drop below 3. The bottom of the scale gets little use. Scores bunch near the top, so telling one course apart from another from the score alone gets harder.
 
 **Is this what you expected? Why or why not?**
 
-
+Yes. Course evaluations almost always skew high. Students who hated a class often skip the survey. Students also tend to avoid the lowest end of any rating scale. The left skew, high median, and narrow range all line up with what I expected.
 
 ---
 
 ## Exercise 2
 
 Visualize and describe the relationship between `score` and `bty_avg`.
-```{r score-bty-scatter, eval = FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
-ggplot(data = evals, aes(x = ___, y = ___)) +
+```{r score-bty-scatter, eval = TRUE}
+ggplot(data = evals, aes(x = bty_avg, y = score)) +
   geom_point() +
   labs(
-    title = "___",
-    x = "___",
-    y = "___"
+    title = "Evaluation Score vs. Average Beauty Rating",
+    x = "Average Beauty Rating (bty_avg)",
+    y = "Average Evaluation Score"
   )
 ```
 
 **Describe the relationship:**
 
-**Direction (positive, negative, or no relationship):** ___________________
+**Direction (positive, negative, or no relationship):** Positive. As bty_avg goes up, score also goes up a little.
 
-**Strength (weak, moderate, or strong):** _____________________________
+**Strength (weak, moderate, or strong):** Weak. Lots of scatter around the trend. Two professors with similar beauty ratings often have quite different scores.
 
-**Form (linear, curved, or no pattern):** _____________________________
+**Form (linear, curved, or no pattern):** Roughly linear, though the trend is faint.
 
-**Are there any outliers?** ___________________________________________
+**Are there any outliers?** A handful of professors score between 2.3 and 2.7, well below the main cluster. No professor stands out as an outlier on bty_avg.
 
 ---
 
@@ -181,24 +178,23 @@ Recreate the scatterplot from Exercise 2, but this time use `geom_jitter()`. Wha
 ```{marginfigure}
 **Hint:** See the help page for the function at http://ggplot2.tidyverse.org/reference/index.html.
 ```
-```{r score-bty-jitter, eval = FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
+```{r score-bty-jitter, eval = TRUE}
 ggplot(data = evals, aes(x = bty_avg, y = score)) +
   geom_jitter() +
   labs(
-    title = "___",
-    x = "___",
-    y = "___"
+    title = "Evaluation Score vs. Average Beauty Rating (jittered)",
+    x = "Average Beauty Rating (bty_avg)",
+    y = "Average Evaluation Score"
   )
 ```
 
 **What does "jitter" mean?**
 
-
+Jitter adds a tiny random shift to each point. Points stacked on top of each other spread out so you see them as separate dots. The data values do not change, only the display.
 
 **What was misleading about the initial scatterplot?**
 
-
+Both score and bty_avg are recorded with limited precision, so many rows share the exact same x and y values. The plain geom_point() draws all those repeats as a single dot. Areas with lots of professors look sparse. The dataset of 463 courses looks far smaller than what you have, and the relationship looks weaker.
 
 🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercises 1-3", and push your changes.**
 
@@ -214,11 +210,10 @@ Linear model is in the form $\hat{y} = b_0 + b_1 x$.
 Let's see if the apparent trend in the plot is something more than natural variation. Fit a linear model called `score_bty_fit` to predict average professor evaluation `score` by average beauty rating (`bty_avg`). Based on the regression output, write the linear model.
 
 **Fit the model:**
-```{r fit-score-bty, eval = FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
+```{r fit-score-bty, eval = TRUE}
 score_bty_fit <- linear_reg() %>%
   set_engine("lm") %>%
-  fit(___ ~ ___, data = evals)
+  fit(score ~ bty_avg, data = evals)
 
 # View the results
 tidy(score_bty_fit)
@@ -226,7 +221,7 @@ tidy(score_bty_fit)
 
 **Write the linear model equation:**
 
-$$\widehat{score} = \_\_\_ + \_\_\_ \times bty\_avg$$
+$$\widehat{score} = 3.880 + 0.0666 \times bty\_avg$$
 
 **Hint:** The intercept is the estimate for `(Intercept)` and the slope is the estimate for `bty_avg`.
 
@@ -235,15 +230,14 @@ $$\widehat{score} = \_\_\_ + \_\_\_ \times bty\_avg$$
 ## Exercise 5
 
 Recreate the scatterplot from Exercise 2, and add the regression line to this plot in orange color, with shading for the uncertainty of the line turned off.
-```{r scatter-with-line, eval = FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
-ggplot(data = evals, aes(x = ___, y = ___)) +
+```{r scatter-with-line, eval = TRUE}
+ggplot(data = evals, aes(x = bty_avg, y = score)) +
   geom_point() +
-  geom_smooth(method = "___", se = ___, color = "___") +
+  geom_smooth(method = "lm", se = FALSE, color = "orange") +
   labs(
-    title = "___",
-    x = "___",
-    y = "___"
+    title = "Evaluation Score vs. Average Beauty Rating with Regression Line",
+    x = "Average Beauty Rating (bty_avg)",
+    y = "Average Evaluation Score"
   )
 ```
 
@@ -259,12 +253,11 @@ ggplot(data = evals, aes(x = ___, y = ___)) +
 
 Interpret the slope of the linear model in context of the data.
 
-**The slope is:** _____ (get this from the tidy output)
+**The slope is:** 0.0666 (from the tidy output)
 
 **Interpretation in context:**
 
-For every 
-
+For every one-point increase in a professor's average beauty rating, the predicted average evaluation score goes up by about 0.0666 points, on average.
 
 **Template:** "For every one unit increase in [x variable], we expect [y variable] to [increase/decrease] by [slope value] units, on average."
 
@@ -274,15 +267,15 @@ For every
 
 Interpret the intercept of the linear model in context of the data. Comment on whether or not the intercept makes sense in this context.
 
-**The intercept is:** _____ (get this from the tidy output)
+**The intercept is:** 3.880 (from the tidy output)
 
 **Interpretation in context:**
 
-When 
+When a professor's average beauty rating is 0, the model predicts an average evaluation score of about 3.88 out of 5.
 
 **Does this make sense in context? Why or why not?**
 
-
+No. Beauty ratings come from six students rating each professor on a 1 to 10 scale, so the lowest possible bty_avg is 1, never 0. The intercept sits well outside the range of any professor in the data. Use the intercept to position the regression line, not as a meaningful prediction for a real professor.
 
 **Hint:** Think about what a beauty rating of 0 means and whether it's realistic.
 
@@ -293,17 +286,15 @@ When
 Determine the R² of the model and interpret it in context of the data.
 
 **Calculate R²:**
-```{r rsquared-bty, eval = FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
+```{r rsquared-bty, eval = TRUE}
 glance(score_bty_fit)
 ```
 
-**The R² value is:** _____ (look for `r.squared` in the output)
+**The R² value is:** 0.0350 (look for `r.squared` in the output)
 
 **Interpretation in context:**
 
-Approximately _____% of the variability in _______________
-is explained by 
+About 3.5% of the variability in evaluation scores is explained by bty_avg. The other 96.5% comes from factors outside this model. There is a positive association, but beauty by itself explains almost none of why students rate professors the way they do.
 
 🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercises 4-8", and push your changes.**
 
@@ -316,28 +307,27 @@ is explained by
 Fit a new linear model called `score_gender_fit` to predict average professor evaluation `score` based on `gender` of the professor. Based on the regression output, write the linear model and interpret the slope and intercept in context of the data.
 
 **Fit the model:**
-```{r fit-score-gender, eval = FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
+```{r fit-score-gender, eval = TRUE}
 score_gender_fit <- linear_reg() %>%
   set_engine("lm") %>%
-  fit(___ ~ ___, data = evals)
+  fit(score ~ gender, data = evals)
 
 tidy(score_gender_fit)
 ```
 
 **Write the linear model equation:**
 
-$$\widehat{score} = \_\_\_ + \_\_\_ \times gendermale$$
+$$\widehat{score} = 4.093 + 0.142 \times gendermale$$
 
 **Note:** R uses the first category alphabetically as the reference (baseline) level. So "female" is the reference here.
 
 **Interpret the intercept:**
 
-
+The intercept (4.093) is the predicted score for female professors, the reference level. On average, female professors score about 4.09 out of 5.
 
 **Interpret the slope:**
 
-
+The slope (0.142) is the difference in predicted score between male and female professors. Male professors score about 0.142 points higher than female professors on average.
 
 ---
 
@@ -347,15 +337,15 @@ What is the equation of the line corresponding to male professors? What is it fo
 
 **For male professors (where gender = male, so gendermale = 1):**
 
-$$\widehat{score} = \_\_\_ + \_\_\_ \times 1 = \_\_\_$$
+$$\widehat{score} = 4.093 + 0.142 \times 1 = 4.235$$
 
 **For female professors (where gender = female, so gendermale = 0):**
 
-$$\widehat{score} = \_\_\_ + \_\_\_ \times 0 = \_\_\_$$
+$$\widehat{score} = 4.093 + 0.142 \times 0 = 4.093$$
 
 **What does this tell you about the difference in average scores?**
 
-
+Male professors have a predicted score of 4.235. Female professors have a predicted score of 4.093. So male professors score about 0.14 points higher than female professors on average. This number is the difference in mean evaluation score between the two groups.
 
 🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercises 9-10", and push your changes.**
 
@@ -366,11 +356,10 @@ $$\widehat{score} = \_\_\_ + \_\_\_ \times 0 = \_\_\_$$
 Fit a new linear model called `score_rank_fit` to predict average professor evaluation `score` based on `rank` of the professor. Based on the regression output, write the linear model and interpret the slopes and intercept in context of the data.
 
 **Fit the model:**
-```{r fit-score-rank, eval = FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
+```{r fit-score-rank, eval = TRUE}
 score_rank_fit <- linear_reg() %>%
   set_engine("lm") %>%
-  fit(score ~ ___, data = evals)
+  fit(score ~ rank, data = evals)
 
 tidy(score_rank_fit)
 ```
@@ -379,29 +368,28 @@ tidy(score_rank_fit)
 
 **Write the linear model equation:**
 
-$$\widehat{score} = \_\_\_ + \_\_\_ \times ranktenuretrack + \_\_\_ \times ranktenured$$
+$$\widehat{score} = 4.284 + (-0.130) \times ranktenuretrack + (-0.145) \times ranktenured$$
 
 **Interpret the intercept (for teaching faculty):**
 
-
+The intercept (4.284) is the predicted score for teaching faculty, the reference level. Teaching faculty score about 4.28 out of 5 on average.
 
 **Interpret the slope for ranktenuretrack:**
 
-
+Tenure-track professors score about 0.130 points lower than teaching faculty on average. Their predicted score is 4.284 minus 0.130, or about 4.155.
 
 **Interpret the slope for ranktenured:**
 
-
+Tenured professors score about 0.145 points lower than teaching faculty on average. Their predicted score is 4.284 minus 0.145, or about 4.139.
 
 ---
 
 ## Exercise 12
 
 Create a new variable called `rank_relevel` where "tenure track" is the baseline level.
-```{r create-rank-relevel, eval = FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
+```{r create-rank-relevel, eval = TRUE}
 evals <- evals %>%
-  mutate(rank_relevel = fct_relevel(rank, "___"))
+  mutate(rank_relevel = fct_relevel(rank, "tenure track"))
 ```
 
 **What this does:**
@@ -410,8 +398,7 @@ evals <- evals %>%
 - Put "tenure track" as the first argument to make it the baseline
 
 **Verify it worked:**
-```{r check-levels, eval = FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
+```{r check-levels, eval = TRUE}
 levels(evals$rank_relevel)
 ```
 
@@ -424,11 +411,10 @@ The first level shown should be "tenure track".
 Fit a new linear model called `score_rank_relevel_fit` to predict average professor evaluation `score` based on `rank_relevel` of the professor. This is the new (releveled) variable you created in Exercise 12. Based on the regression output, write the linear model and interpret the slopes and intercept in context of the data. Also determine and interpret the R² of the model.
 
 **Fit the model:**
-```{r fit-score-rank-relevel, eval = FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
+```{r fit-score-rank-relevel, eval = TRUE}
 score_rank_relevel_fit <- linear_reg() %>%
   set_engine("lm") %>%
-  fit(score ~ ___, data = evals)
+  fit(score ~ rank_relevel, data = evals)
 
 tidy(score_rank_relevel_fit)
 glance(score_rank_relevel_fit)
@@ -436,24 +422,21 @@ glance(score_rank_relevel_fit)
 
 **Write the linear model equation:**
 
-$$\widehat{score} = \_\_\_ + \_\_\_ \times rankreleveltea ching + \_\_\_ \times rankreleveltenured$$
+$$\widehat{score} = 4.155 + 0.130 \times rankrelevelteaching + (-0.016) \times rankreleveltenured$$
 
 **Interpret the intercept (now for tenure track faculty):**
 
-
-
+The intercept (4.155) is the predicted score for tenure-track faculty, now the reference level. Tenure-track professors score about 4.15 out of 5 on average.
 
 **Interpret the slopes:**
 
+rankrelevelteaching is 0.130. Teaching faculty score about 0.130 points higher than tenure-track faculty on average. rankreleveltenured is -0.016. Tenured faculty score about 0.016 points lower than tenure-track faculty on average, a tiny gap. The model gives the same comparisons among the three groups as Exercise 11. Only the reference category and the meaning of each coefficient changed.
 
-
-
-**R² value:** _____
+**R² value:** 0.0116
 
 **Interpretation of R²:**
 
-
-
+Rank explains about 1.16% of the variability in evaluation scores. The fit is poor. Rank tells you almost nothing about score. Re-leveling does not change R². This value matches the model from Exercise 11.
 
 🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercises 11-13", and push your changes.**
 
@@ -462,13 +445,12 @@ $$\widehat{score} = \_\_\_ + \_\_\_ \times rankreleveltea ching + \_\_\_ \times 
 ## Exercise 14
 
 Create another new variable called `tenure_eligible` that labels "teaching" faculty as "no" and labels "tenure track" and "tenured" faculty as "yes".
-```{r create-tenure-eligible, eval = FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
+```{r create-tenure-eligible, eval = TRUE}
 evals <- evals %>%
   mutate(tenure_eligible = if_else(
-    rank == "___", 
-    "___", 
-    "___"
+    rank == "teaching",
+    "no",
+    "yes"
   ))
 ```
 
@@ -477,8 +459,7 @@ evals <- evals %>%
 - Otherwise, set to "yes"
 
 **Verify it worked:**
-```{r check-tenure-eligible, eval = FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
+```{r check-tenure-eligible, eval = TRUE}
 evals %>%
   count(rank, tenure_eligible)
 ```
@@ -492,11 +473,10 @@ You should see teaching faculty labeled as "no" and the other two as "yes".
 Fit a new linear model called `score_tenure_eligible_fit` to predict average professor evaluation `score` based on `tenure_eligible`ness of the professor. This is the new (regrouped) variable you created in the previous exercise. Based on the regression output, write the linear model and interpret the slopes and intercept in context of the data. Also determine and interpret the R² of the model.
 
 **Fit the model:**
-```{r fit-score-tenure, eval = FALSE}
-# Remember to change eval=FALSE to eval=TRUE!
+```{r fit-score-tenure, eval = TRUE}
 score_tenure_eligible_fit <- linear_reg() %>%
   set_engine("lm") %>%
-  fit(score ~ ___, data = evals)
+  fit(score ~ tenure_eligible, data = evals)
 
 tidy(score_tenure_eligible_fit)
 glance(score_tenure_eligible_fit)
@@ -504,29 +484,25 @@ glance(score_tenure_eligible_fit)
 
 **Write the linear model equation:**
 
-$$\widehat{score} = \_\_\_ + \_\_\_ \times tenureeligibleyes$$
+$$\widehat{score} = 4.284 + (-0.141) \times tenureeligibleyes$$
 
 **Interpret the intercept:**
 
-
-
+The intercept (4.284) is the predicted score for professors who are not tenure eligible (teaching faculty, the reference level). Teaching faculty score about 4.28 out of 5 on average.
 
 **Interpret the slope:**
 
+The slope (-0.141) is the difference in predicted score between tenure-eligible professors (tenure-track plus tenured) and teaching faculty. Tenure-eligible professors score about 0.141 points lower than teaching faculty on average.
 
-
-
-**R² value:** _____
+**R² value:** 0.0115
 
 **Interpretation of R²:**
 
-
-
+Tenure eligibility explains about 1.15% of the variability in evaluation scores. Like the rank model, this value sits near zero. Whether a professor is tenure eligible barely explains any variation in scores.
 
 **How does this R² compare to the R² from Exercise 13? What does this tell you?**
 
-
-
+The two R² values are almost identical (0.0115 versus 0.0116). Collapsing the three rank categories into two cost almost no explanatory power. The gap between tenure-track and tenured was already tiny in Exercise 13, with a slope of about -0.016. Almost all the signal in rank came from the gap between teaching faculty and the other two groups. The simpler two-category model gives the same information with one fewer coefficient.
 
 🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercises 14-15", and push your changes.**
 
