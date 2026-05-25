@@ -1,16 +1,16 @@
 ---
 title: "Lab 12 - Smoking during pregnancy"
 subtitle: "Simulation based inference"
-author: "Your Name"
-output: 
-  tufte::tufte_html:
-    tufte_variant: "envisioned"
-    highlight: pygments
-    css: ../lab.css
+author: "Kaden Zhu"
+output:
   tufte::tufte_handout:
     latex_engine: xelatex
     highlight: pygments
     keep_tex: true
+  tufte::tufte_html:
+    tufte_variant: "envisioned"
+    highlight: pygments
+    css: ../lab.css
 link-citations: yes
 ---
 ```{r include=FALSE}
@@ -81,7 +81,7 @@ Step 3. Click **Knit** to make sure the document compiles
 
 We'll use the **tidyverse** package for much of the data wrangling and visualisation, the **tidymodels** package for inference, and the data lives in the **openintro** package. These packages are already installed for you. You can load them by running the following in your Console:
 ```{r load-packages, eval = TRUE, message = FALSE}
-library(tidyverse) 
+library(tidyverse)
 library(tidymodels)
 library(openintro)
 ```
@@ -101,7 +101,7 @@ In this lab we'll be generating random samples through bootstrapping. The last t
 **What is a seed?** A seed tells R where to start its random number generation. Using the same seed ensures you get the same "random" results each time you knit.
 ```{r set-seed, eval = TRUE}
 # Set your seed here - use any number you like
-set.seed(12345)
+set.seed(173864)
 ```
 
 **Choose any number** - just make sure you use the same seed throughout the entire lab.
@@ -123,11 +123,11 @@ glimpse(ncbirths)
 
 **Your answers:**
 
-**What are the cases?** Each case represents _______________________________
+**What are the cases?** Each case represents a birth recorded in North Carolina in 2004, with information about the mother, father, pregnancy, and baby.
 
 **How many cases are there?** Use inline code to report the number.
 
-There are _____ cases in our sample.
+There are `r nrow(ncbirths)` cases in our sample.
 
 ---
 
@@ -136,7 +136,7 @@ There are _____ cases in our sample.
 The first step in the analysis of a new dataset is getting acquainted with the data. Make summaries of the variables in your dataset, determine which variables are categorical and which are numerical. For numerical variables, are there outliers? If you aren't sure or want to take a closer look at the data, make a graph.
 
 **Create summary statistics:**
-```{r summary-stats, eval = FALSE}
+```{r summary-stats, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 
 # For numerical variables
@@ -152,27 +152,34 @@ ncbirths %>%
 
 **List the variables:**
 
-**Categorical variables:** 
+**Categorical variables:** mature, premie, marital, lowbirthweight, gender, habit, whitemom
 
 
 
-**Numerical variables:**
+**Numerical variables:** fage, mage, weeks, visits, gained, weight
 
 
 
 **Check for outliers in key variables:**
-```{r check-outliers, eval = FALSE}
+```{r check-outliers, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 
 # Boxplot for weight
-ggplot(data = ncbirths, aes(y = ___)) +
+ggplot(data = ncbirths, aes(y = weight)) +
   geom_boxplot() +
-  labs(title = "___")
+  labs(title = "Distribution of baby weights")
 
 # Boxplot for other numerical variables as needed
+ggplot(data = ncbirths, aes(y = weeks)) +
+  geom_boxplot() +
+  labs(title = "Distribution of pregnancy length in weeks")
+
+ggplot(data = ncbirths, aes(y = gained)) +
+  geom_boxplot() +
+  labs(title = "Distribution of weight gained by mother")
 ```
 
-**Are there outliers?**
+**Are there outliers?** Yes. The boxplots show low outliers in baby weight and pregnancy length, and both low and high outliers in weight gained by the mother.
 
 
 
@@ -200,22 +207,22 @@ Note that this is a **two-sided test** because we're testing for any change (cou
 ## Exercise 3
 
 Create a filtered data frame called `ncbirths_white` that contains data only from white mothers. Then, calculate the mean of the weights of their babies.
-```{r filter-white, eval = FALSE}
+```{r filter-white, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 ncbirths_white <- ncbirths %>%
-  filter(___ == "___")
+  filter(whitemom == "white")
 
 # Calculate mean weight
 mean_weight_white <- ncbirths_white %>%
-  summarise(mean_weight = mean(___)) %>%
+  summarise(mean_weight = mean(weight)) %>%
   pull(mean_weight)
 
 mean_weight_white
 ```
 
-**The observed mean weight is:** _____ pounds
+**The observed mean weight is:** 7.25 pounds
 
-**How does this compare to 7.43 pounds?** 
+**How does this compare to 7.43 pounds?** The observed mean is lower than the 1995 value of 7.43 pounds by about 0.18 pounds.
 
 ---
 
@@ -233,23 +240,23 @@ part (c) **Random sampling:** Sample should be random or representative
 
 **Check each condition:**
 
-**Independence:** 
+**Independence:** Births in the sample come from different mothers and one birth does not influence another. The observations are independent.
 
 
 
 **Sample size:** How many white mothers are in the dataset?
-```{r check-sample-size, eval = FALSE}
+```{r check-sample-size, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 nrow(ncbirths_white)
 ```
 
-There are _____ observations. Is this large enough? 
+There are 714 observations. Yes, this sample size is far above the rule of thumb of 30, so it is large enough.
 
 
-**Random sampling:**
+**Random sampling:** The data was drawn as a random sample from North Carolina births in 2004, so the sample represents the population well.
 
 
-**Conclusion: Are conditions satisfied?** 
+**Conclusion: Are conditions satisfied?** Yes, all three conditions hold, so we proceed with simulation-based inference.
 
 
 ---
@@ -271,7 +278,7 @@ Step 3. Shift the distribution to center at the null value (7.43)
 Step 4. See how extreme our observed mean is
 
 **Run the hypothesis test:**
-```{r hypothesis-test-weight, eval = FALSE}
+```{r hypothesis-test-weight, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 
 # Calculate observed statistic (difference from null)
@@ -282,13 +289,13 @@ obs_stat <- ncbirths_white %>%
 # Generate null distribution
 null_dist <- ncbirths_white %>%
   specify(response = weight) %>%
-  hypothesize(null = "point", mu = ___) %>%  # Null value in pounds
+  hypothesize(null = "point", mu = 7.43) %>%  # Null value in pounds
   generate(reps = 10000, type = "bootstrap") %>%
   calculate(stat = "mean")
 
 # Visualize null distribution
 visualize(null_dist) +
-  shade_p_value(obs_stat = obs_stat, direction = "___") +
+  shade_p_value(obs_stat = obs_stat, direction = "two-sided") +
   labs(
     title = "Null distribution of mean baby weight",
     x = "Mean weight (pounds)",
@@ -297,22 +304,22 @@ visualize(null_dist) +
 
 # Calculate p-value
 null_dist %>%
-  get_p_value(obs_stat = obs_stat, direction = "___")
+  get_p_value(obs_stat = obs_stat, direction = "two-sided")
 ```
 
 **Hints:**
 - `mu = 7.43` for the null value
 - `direction = "two-sided"` for a two-sided test
 
-**The p-value is:** _____
+**The p-value is:** about 0.0001
 
 **Interpretation:**
 
-At a significance level of 0.05, we 
+At a significance level of 0.05, we reject the null hypothesis
 
-because the p-value is 
+because the p-value is less than 0.05.
 
-In context: 
+In context: The data provides strong evidence that the average weight of babies born to white mothers in North Carolina in 2004 differs from the 1995 value of 7.43 pounds.
 
 🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercises 3-5", and push your changes.**
 
@@ -325,22 +332,22 @@ Consider the possible relationship between a mother's smoking habit and the weig
 ## Exercise 6
 
 Make side-by-side boxplots displaying the relationship between `habit` and `weight`. What does the plot highlight about the relationship between these two variables?
-```{r boxplot-habit-weight, eval = FALSE}
+```{r boxplot-habit-weight, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
-ggplot(data = ncbirths, aes(x = ___, y = ___)) +
+ggplot(data = ncbirths, aes(x = habit, y = weight)) +
   geom_boxplot() +
   labs(
-    title = "___",
-    x = "___",
-    y = "___"
+    title = "Baby weight by mother smoking habit",
+    x = "Smoking habit",
+    y = "Birth weight (pounds)"
   )
 ```
 
-**What does the plot show about the relationship?**
+**What does the plot show about the relationship?** Babies born to nonsmoking mothers tend to weigh more than babies born to smoking mothers. The median weight for the nonsmoker group sits higher than the median for the smoker group.
 
 
 
-**Which group has higher median weight?**
+**Which group has higher median weight?** Nonsmokers have a higher median birth weight.
 
 
 
@@ -349,20 +356,20 @@ ggplot(data = ncbirths, aes(x = ___, y = ___)) +
 ## Exercise 7
 
 Before moving forward, save a version of the dataset omitting observations where there are NAs for `habit`. You can call this version `ncbirths_habitgiven`.
-```{r remove-na-habit, eval = FALSE}
+```{r remove-na-habit, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 ncbirths_habitgiven <- ncbirths %>%
-  filter(!is.na(___))
+  filter(!is.na(habit))
 
 # Check how many observations we have
 nrow(ncbirths_habitgiven)
 ```
 
-**How many observations remain after removing NAs?** _____
+**How many observations remain after removing NAs?** 999
 
 The box plots show how the medians of the two distributions compare, but we can also compare the means of the distributions using the following to first group the data by the `habit` variable, and then calculate the mean `weight` in these groups:
 
-```{r habit-means, eval = FALSE}
+```{r habit-means, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE after completing the code above
 ncbirths_habitgiven %>%
   group_by(habit) %>%
@@ -371,9 +378,9 @@ ncbirths_habitgiven %>%
 
 **Observed difference in means:**
 
-Mean weight for nonsmokers: _____ pounds
-Mean weight for smokers: _____ pounds
-Difference: _____ pounds
+Mean weight for nonsmokers: 7.14 pounds
+Mean weight for smokers: 6.83 pounds
+Difference: 0.32 pounds
 
 **There is an observed difference, but is this difference statistically significant?**
 
@@ -385,11 +392,11 @@ Difference: _____ pounds
 
 Write the hypotheses for testing if the average weights of babies born to smoking and non-smoking mothers are different.
 
-**Null hypothesis (H₀):**
+**Null hypothesis (H₀):** The average weight of babies born to smoking mothers equals the average weight of babies born to nonsmoking mothers. $H_0: \mu_{nonsmoker} - \mu_{smoker} = 0$
 
 
 
-**Alternative hypothesis (Hₐ):**
+**Alternative hypothesis (Hₐ):** The average weight of babies born to smoking mothers differs from the average weight of babies born to nonsmoking mothers. $H_A: \mu_{nonsmoker} - \mu_{smoker} \ne 0$
 
 
 
@@ -403,28 +410,28 @@ Are the conditions necessary for conducting simulation-based inference satisfied
 
 **Check conditions:**
 
-**Independence:**
+**Independence:** Births in the sample are independent of each other and the two groups (smoker and nonsmoker) are independent.
 
 
 
 **Sample size in each group:**
-```{r check-habit-counts, eval = FALSE}
+```{r check-habit-counts, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 ncbirths_habitgiven %>%
   count(habit)
 ```
 
-Nonsmokers: _____ observations
-Smokers: _____ observations
+Nonsmokers: 873 observations
+Smokers: 126 observations
 
-**Are these large enough?** 
-
-
-**Random sampling:**
+**Are these large enough?** Yes, both groups have well over 30 observations.
 
 
+**Random sampling:** The data is a random sample of North Carolina births, so the sample represents the population.
 
-**Conclusion:**
+
+
+**Conclusion:** All conditions are satisfied for simulation-based inference on the difference in means.
 
 
 
@@ -433,7 +440,7 @@ Smokers: _____ observations
 ## Exercise 10
 
 Run the appropriate hypothesis test, calculate the p-value, and interpret the results in context of the data and the hypothesis test.
-```{r hypothesis-test-habit, eval = FALSE}
+```{r hypothesis-test-habit, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 
 # Calculate observed statistic
@@ -450,7 +457,7 @@ null_dist_habit <- ncbirths_habitgiven %>%
 
 # Visualize
 visualize(null_dist_habit) +
-  shade_p_value(obs_stat = obs_diff, direction = "___") +
+  shade_p_value(obs_stat = obs_diff, direction = "two-sided") +
   labs(
     title = "Null distribution of difference in mean weights",
     x = "Difference in mean weight (nonsmoker - smoker)",
@@ -459,14 +466,14 @@ visualize(null_dist_habit) +
 
 # Calculate p-value
 null_dist_habit %>%
-  get_p_value(obs_stat = obs_diff, direction = "___")
+  get_p_value(obs_stat = obs_diff, direction = "two-sided")
 ```
 
-**The observed difference is:** _____ pounds
+**The observed difference is:** 0.316 pounds
 
-**The p-value is:** _____
+**The p-value is:** about 0.02
 
-**Interpretation:**
+**Interpretation:** Since the p-value of 0.02 is less than 0.05, we reject the null hypothesis. The data provides evidence of a difference in mean birth weight between babies born to nonsmoking mothers and babies born to smoking mothers.
 
 
 ---
@@ -474,7 +481,7 @@ null_dist_habit %>%
 ## Exercise 11
 
 Construct a 95% confidence interval for the difference between the average weights of babies born to smoking and non-smoking mothers.
-```{r ci-habit, eval = FALSE}
+```{r ci-habit, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 
 # Generate bootstrap distribution
@@ -485,7 +492,7 @@ boot_dist_habit <- ncbirths_habitgiven %>%
 
 # Get confidence interval
 ci <- boot_dist_habit %>%
-  get_confidence_interval(level = ___, type = "percentile")
+  get_confidence_interval(level = 0.95, type = "percentile")
 
 ci
 
@@ -499,11 +506,11 @@ visualize(boot_dist_habit) +
   )
 ```
 
-**The 95% confidence interval is:** (_____, _____)
+**The 95% confidence interval is:** (0.05, 0.58)
 
 **Interpretation in context:**
 
-We are 95% confident that 
+We are 95% confident that the true difference in mean birth weight between babies of nonsmoking mothers and babies of smoking mothers in North Carolina is between 0.05 and 0.58 pounds, with nonsmokers having heavier babies on average.
 
 
 🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercises 8-11", and push your changes.**
@@ -519,12 +526,12 @@ In this portion of the analysis we focus on two variables. The first one is `mat
 First, a non-inference task: Determine the age cutoff for younger and mature mothers. Use a method of your choice, and explain how your method works.
 
 **Explore the maturemom variable:**
-```{r explore-maturemom, eval = FALSE}
+```{r explore-maturemom, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 
 # Look at the relationship between age and maturemom
 ncbirths %>%
-  group_by(maturemom) %>%
+  group_by(mature) %>%
   summarise(
     min_age = min(mage, na.rm = TRUE),
     max_age = max(mage, na.rm = TRUE)
@@ -533,12 +540,12 @@ ncbirths %>%
 # Or look at specific ages
 ncbirths %>%
   filter(mage >= 34, mage <= 36) %>%
-  count(mage, maturemom)
+  count(mage, mature)
 ```
 
-**The age cutoff is:** _____ years
+**The age cutoff is:** 35 years
 
-**Explanation of method:**
+**Explanation of method:** I grouped the data by the mature variable and looked at the minimum and maximum age in each group. Younger mothers range up to age 34 and mature mothers start at age 35. The cutoff sits at 35 years old.
 
 
 
@@ -552,67 +559,67 @@ Conduct a hypothesis test evaluating whether the proportion of low birth weight 
 
 **State the hypotheses:**
 
-**H₀:** 
+**H₀:** The proportion of low birth weight babies is the same for mature and younger mothers. $H_0: p_{mature} - p_{younger} = 0$
 
-**Hₐ:** 
+**Hₐ:** The proportion of low birth weight babies is higher for mature mothers than for younger mothers. $H_A: p_{mature} - p_{younger} > 0$
 
 **Note:** This is a **one-sided test** because we're testing if mature mothers have a *higher* proportion.
 
 **Verify conditions:**
 
-**Independence:**
+**Independence:** Births in the sample are independent of each other, and the two groups of mothers are independent.
 
 ___________________________________________________________________________
 
 **Sample size:**
-```{r check-maturemom-counts, eval = FALSE}
+```{r check-maturemom-counts, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 ncbirths %>%
-  filter(!is.na(maturemom), !is.na(lowbirthweight)) %>%
-  count(maturemom)
+  filter(!is.na(mature), !is.na(lowbirthweight)) %>%
+  count(mature)
 ```
 
-**Are conditions satisfied?**
+**Are conditions satisfied?** Yes. Both groups have at least 10 low birth weight babies and 10 babies of normal weight, and the data was randomly sampled, so all conditions hold.
 
 
 
 **Calculate observed proportions:**
-```{r observed-proportions, eval = FALSE}
+```{r observed-proportions, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 ncbirths %>%
-  filter(!is.na(maturemom), !is.na(lowbirthweight)) %>%
-  group_by(maturemom) %>%
+  filter(!is.na(mature), !is.na(lowbirthweight)) %>%
+  group_by(mature) %>%
   summarise(prop_low = mean(lowbirthweight == "low"))
 ```
 
 **Observed proportions:**
 
-Younger mothers: _____
-Mature mothers: _____
+Younger mothers: 0.10
+Mature mothers: 0.13
 
 **Run the hypothesis test:**
-```{r hypothesis-test-mature, eval = FALSE}
+```{r hypothesis-test-mature, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 
 # Create filtered dataset
 ncbirths_mature <- ncbirths %>%
-  filter(!is.na(maturemom), !is.na(lowbirthweight))
+  filter(!is.na(mature), !is.na(lowbirthweight))
 
 # Calculate observed statistic
 obs_diff_prop <- ncbirths_mature %>%
-  specify(lowbirthweight ~ maturemom, success = "low") %>%
+  specify(lowbirthweight ~ mature, success = "low") %>%
   calculate(stat = "diff in props", order = c("mature mom", "younger mom"))
 
 # Generate null distribution
 null_dist_mature <- ncbirths_mature %>%
-  specify(lowbirthweight ~ maturemom, success = "low") %>%
+  specify(lowbirthweight ~ mature, success = "low") %>%
   hypothesize(null = "independence") %>%
   generate(reps = 10000, type = "permute") %>%
   calculate(stat = "diff in props", order = c("mature mom", "younger mom"))
 
 # Visualize
 visualize(null_dist_mature) +
-  shade_p_value(obs_stat = obs_diff_prop, direction = "___") +
+  shade_p_value(obs_stat = obs_diff_prop, direction = "greater") +
   labs(
     title = "Null distribution of difference in proportions",
     x = "Difference in proportion (mature - younger)"
@@ -620,26 +627,26 @@ visualize(null_dist_mature) +
 
 # Calculate p-value
 p_value <- null_dist_mature %>%
-  get_p_value(obs_stat = obs_diff_prop, direction = "___")
+  get_p_value(obs_stat = obs_diff_prop, direction = "greater")
 
 p_value
 ```
 
 **Hint:** `direction = "greater"` for a one-sided test
 
-**The p-value is:** _____
+**The p-value is:** about 0.17
 
-**Conclusion:**
+**Conclusion:** Since the p-value of 0.17 is greater than 0.05, we fail to reject the null hypothesis. The data does not provide evidence that mature mothers have a higher proportion of low birth weight babies than younger mothers.
 
 
 
 **If significant, construct a 95% confidence interval:**
-```{r ci-mature, eval = FALSE}
+```{r ci-mature, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 # Only run if you found a significant difference
 
 boot_dist_mature <- ncbirths_mature %>%
-  specify(lowbirthweight ~ maturemom, success = "low") %>%
+  specify(lowbirthweight ~ mature, success = "low") %>%
   generate(reps = 10000, type = "bootstrap") %>%
   calculate(stat = "diff in props", order = c("mature mom", "younger mom"))
 
@@ -649,9 +656,9 @@ ci_mature <- boot_dist_mature %>%
 ci_mature
 ```
 
-**The 95% confidence interval is:** (_____, _____)
+**The 95% confidence interval is:** Since the difference was not significant, the confidence interval is not required here. If reported, the bootstrap interval falls around (-0.03, 0.10), which contains 0 and matches our conclusion.
 
-**Interpretation:**
+**Interpretation:** The interval contains 0, which agrees with the hypothesis test result that we fail to reject the null. We do not have evidence of a higher proportion of low birth weight babies among mature mothers.
 
 
 
