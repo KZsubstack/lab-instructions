@@ -1,7 +1,7 @@
 ---
 title: "Lab 11 - Grading the professor, Pt. 2"
 subtitle: "Modeling with multiple predictors"
-author: "Your Name"
+author: "Kaden Zhu"
 output: 
   tufte::tufte_handout:
     latex_engine: xelatex
@@ -110,7 +110,7 @@ glimpse(evals)
 
 **How many observations are in the dataset?** Use inline code to report.
 
-**Your answer:** The dataset has \_\_\_\_\_ observations.
+**Your answer:** The dataset has `r nrow(evals)` observations.
 
 **✓ Checkpoint:** You should see 463 observations and 23 variables.
 
@@ -122,11 +122,11 @@ glimpse(evals)
 
 Fit a linear model (one you have fit in Lab 10): `score_bty_fit`, predicting average professor evaluation `score` based on average beauty rating (`bty_avg`) only. Write the linear model, and note the R² and the adjusted R².
 
-```{r fit-score-bty, eval = FALSE}
+```{r fit-score-bty, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 score_bty_fit <- linear_reg() %>%
   set_engine("lm") %>%
-  fit(score ~ ___, data = evals)
+  fit(score ~ bty_avg, data = evals)
 
 # View coefficients
 tidy(score_bty_fit)
@@ -137,11 +137,11 @@ glance(score_bty_fit)
 
 **Write the linear model equation:**
 
-$$\widehat{score} = \_\_\_ + \_\_\_ \times bty\_avg$$
+$$\widehat{score} = 3.8803 + 0.0666 \times bty\_avg$$
 
-**R² value:** \_\_\_\_\_
+**R² value:** 0.0350
 
-**Adjusted R² value:** \_\_\_\_\_
+**Adjusted R² value:** 0.0328
 
 🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercises 1-2", and push your changes.**
 
@@ -153,11 +153,11 @@ $$\widehat{score} = \_\_\_ + \_\_\_ \times bty\_avg$$
 
 Fit a linear model (one you have fit in Lab 10): `score_bty_gen_fit`, predicting average professor evaluation `score` based on average beauty rating (`bty_avg`) and `gender`. Write the linear model, and note the R² and the adjusted R².
 
-```{r fit-score-bty-gender, eval = FALSE}
+```{r fit-score-bty-gender, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 score_bty_gen_fit <- linear_reg() %>%
   set_engine("lm") %>%
-  fit(score ~ ___ + ___, data = evals)
+  fit(score ~ bty_avg + gender, data = evals)
 
 # View coefficients
 tidy(score_bty_gen_fit)
@@ -168,11 +168,11 @@ glance(score_bty_gen_fit)
 
 **Write the linear model equation:**
 
-$$\widehat{score} = \_\_\_ + \_\_\_ \times bty\_avg + \_\_\_ \times gendermale$$
+$$\widehat{score} = 3.7473 + 0.0742 \times bty\_avg + 0.1724 \times gendermale$$
 
-**R² value:** \_\_\_\_\_
+**R² value:** 0.0591
 
-**Adjusted R² value:** \_\_\_\_\_
+**Adjusted R² value:** 0.0549
 
 ------------------------------------------------------------------------
 
@@ -182,15 +182,15 @@ Interpret the slopes and intercept of `score_bty_gen_fit` in context of the data
 
 **Interpret the intercept:**
 
-The intercept represents
+The intercept represents the expected evaluation score for female professors with a beauty rating of 0. That expected score is 3.7473.
 
 **Interpret the slope for bty_avg:**
 
-Holding gender constant, for every one unit increase in beauty rating, \_\_\_\_\_\_\_
+Holding gender constant, for every one unit increase in beauty rating, the expected evaluation score increases by 0.0742 points on average.
 
 **Interpret the slope for gendermale:**
 
-Holding beauty rating constant, male professors are expected to score \_\_\_\_\_\_\_\_
+Holding beauty rating constant, male professors are expected to score 0.1724 points higher than female professors on average.
 
 **Important:** In multiple regression, we interpret each coefficient "holding all other variables constant."
 
@@ -202,7 +202,7 @@ What percent of the variability in `score` is explained by the model `score_bty_
 
 **Use the R² value from Exercise 3.**
 
-Approximately \_\_\_\_\_% of the variability in professor evaluation scores is explained by beauty rating and gender.
+Approximately 5.91% of the variability in professor evaluation scores is explained by beauty rating and gender.
 
 ------------------------------------------------------------------------
 
@@ -224,7 +224,7 @@ $$\widehat{score} = (b_0 + b_2) + b_1 \times bty\_avg$$
 
 **With your actual values:**
 
-$$\widehat{score} = \_\_\_ + \_\_\_ \times bty\_avg$$
+$$\widehat{score} = 3.9197 + 0.0742 \times bty\_avg$$
 
 🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercises 3-6", and push your changes.**
 
@@ -240,11 +240,11 @@ For two professors who received the same beauty rating, which gender tends to ha
 
 If the coefficient is positive: Male professors tend to have higher scores. If the coefficient is negative: Female professors tend to have higher scores.
 
-**The coefficient is:** \_\_\_\_\_ (positive/negative)
+**The coefficient is:** 0.1724 (positive)
 
-**Therefore:**
+**Therefore:** Male professors tend to have higher course evaluation scores than female professors with the same beauty rating.
 
-**By how much?** \_\_\_\_\_
+**By how much?** 0.1724 points higher on average.
 
 ------------------------------------------------------------------------
 
@@ -256,7 +256,7 @@ How does the relationship between beauty and evaluation score vary between male 
 
 **Your answer:**
 
-The relationship between beauty and evaluation score \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ (does / does not) vary between male and female professors because \_\_\_\_\_\_\_\_\_\_
+The relationship between beauty and evaluation score does not vary between male and female professors because the model uses a single shared slope for bty_avg. Both groups have the same slope of 0.0742; the lines are parallel, only shifted by the gendermale coefficient.
 
 **Hint:** In this model, both genders have the same slope for bty_avg. The lines are parallel!
 
@@ -268,15 +268,15 @@ How do the adjusted R² values of `score_bty_gen_fit` and `score_bty_fit` compar
 
 **Compare the adjusted R² values:**
 
-**score_bty_fit adjusted R²:** \_\_\_\_\_ (from Exercise 2)
+**score_bty_fit adjusted R²:** 0.0328 (from Exercise 2)
 
-**score_bty_gen_fit adjusted R²:** \_\_\_\_\_ (from Exercise 3)
+**score_bty_gen_fit adjusted R²:** 0.0549 (from Exercise 3)
 
-**Difference:** \_\_\_\_\_
+**Difference:** 0.0221
 
 **Interpretation:**
 
-The adjusted R² increased/decreased by \_\_\_\_\_ when we added gender to the model. This tells us that gender \_\_\_\_\_\_
+The adjusted R² increased by 0.0221 when we added gender to the model. This tells us that gender explains additional variability in professor evaluation scores beyond what beauty rating alone captures, and that the improvement is not simply due to adding another predictor.
 
 **Note:** Adjusted R² accounts for the number of predictors, so it's better for comparing models with different numbers of predictors.
 
@@ -286,13 +286,13 @@ The adjusted R² increased/decreased by \_\_\_\_\_ when we added gender to the m
 
 Compare the slopes of `bty_avg` under the two models (`score_bty_fit` and `score_bty_gen_fit`). Has the addition of `gender` to the model changed the parameter estimate (slope) for `bty_avg`?
 
-**Slope of bty_avg in score_bty_fit:** \_\_\_\_\_ (from Exercise 2)
+**Slope of bty_avg in score_bty_fit:** 0.0666 (from Exercise 2)
 
-**Slope of bty_avg in score_bty_gen_fit:** \_\_\_\_\_ (from Exercise 3)
+**Slope of bty_avg in score_bty_gen_fit:** 0.0742 (from Exercise 3)
 
 **Has it changed?**
 
-The slope has changed/not changed. The difference is \_\_\_\_\_.
+The slope has changed. The difference is 0.0076. Adding gender shifted the bty_avg slope slightly upward, which is consistent with beauty and gender being correlated in this dataset. Controlling for gender adjusts the estimated effect of beauty on score.
 
 **Why might this happen?**
 
@@ -306,11 +306,11 @@ The slope has changed/not changed. The difference is \_\_\_\_\_.
 
 Create a new model called `score_bty_rank_fit` with `gender` removed and `rank` added in. Write the equation of the linear model and interpret the slopes and intercept in context of the data.
 
-```{r fit-score-bty-rank, eval = FALSE}
+```{r fit-score-bty-rank, eval = TRUE}
 # Remember to change eval=FALSE to eval=TRUE!
 score_bty_rank_fit <- linear_reg() %>%
   set_engine("lm") %>%
-  fit(score ~ ___ + ___, data = evals)
+  fit(score ~ bty_avg + rank, data = evals)
 
 # View coefficients
 tidy(score_bty_rank_fit)
@@ -323,27 +323,29 @@ glance(score_bty_rank_fit)
 
 **Write the linear model equation:**
 
-$$\widehat{score} = \_\_\_ + \_\_\_ \times bty\_avg + \_\_\_ \times ranktenuretrack + \_\_\_ \times ranktenured$$
+$$\widehat{score} = 3.9815 + 0.0677 \times bty\_avg + (-0.1607) \times ranktenuretrack + (-0.1261) \times ranktenured$$
 
 **Interpret the intercept:**
 
-For teaching faculty with a beauty rating of 0, the expected evaluation score is \_\_\_\_\_.
+For teaching faculty with a beauty rating of 0, the expected evaluation score is 3.9815.
 
 **Interpret the slope for bty_avg:**
 
-Holding rank constant, for every one unit increase in beauty rating, \_\_\_\_\_\_\_\_
+Holding rank constant, for every one unit increase in beauty rating, the expected evaluation score increases by 0.0677 points on average.
 
 **Interpret the slope for ranktenuretrack:**
 
-Holding beauty rating constant, tenure track faculty are expected to score \_\_\_\_
+Holding beauty rating constant, tenure track faculty are expected to score 0.1607 points lower than teaching faculty on average.
 
 **Interpret the slope for ranktenured:**
 
-Holding beauty rating constant, tenured faculty are expected to score \_\_\_\_\_\_\_\_
+Holding beauty rating constant, tenured faculty are expected to score 0.1261 points lower than teaching faculty on average.
 
-**Adjusted R² for this model:** \_\_\_\_\_
+**Adjusted R² for this model:** 0.0413
 
 **How does this compare to score_bty_gen_fit?**
+
+The adjusted R² for score_bty_rank_fit (0.0413) is lower than for score_bty_gen_fit (0.0549). Gender explains more of the variability in evaluation scores than rank does, when each is paired with beauty rating.
 
 🧶 ✅ ⬆️ **Knit, commit with message "Completed Exercise 11", and push your changes.**
 
